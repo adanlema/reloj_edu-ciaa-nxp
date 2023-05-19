@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include "chip.h"
 #include "al_gpio.h"
+#include "al_bsp.h"
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
@@ -53,9 +54,10 @@
 
 int main(void) {
 
-    int divisor = 0;
-    while (true) {
+    int      divisor = 0;
+    board_pt edu_cia = BoardptCreate();
 
+    while (true) {
         for (int index = 0; index < 100; index++) {
             for (int delay = 0; delay < 25000; delay++) {
                 __asm("NOP");

@@ -145,9 +145,10 @@
 // Definiciones de los recursos asociados al zumbador
 #define BUZZER_PORT 2
 #define BUZZER_PIN  2
-#define BUZZER_FUNC SCU_MODE_FUNC4
+#define BUZZER_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
 #define BUZZER_GPIO 5
 #define BUZZER_BIT  2
+
 /*==================[internal data declaration]==============================*/
 static struct board_s AL = {0};
 /*==================[internal functions declaration]=========================*/
@@ -176,8 +177,33 @@ board_pt BoardptCreate(void) {
     DigitalPin_pt pin_rechazar =
         DigitalPin_Create(KEY_CANCEL_PORT, KEY_CANCEL_PIN, KEY_CANCEL_FUNC);
     DigitalPin_pt pin_buzzer =
-        DigitalPin_Create(BUZZER_PORT, BUZZER_PIN,
-                          SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP | BUZZER_FUNC);
+        DigitalPin_Create(BUZZER_PORT, BUZZER_PIN, BUZZER_FUNC);
+
+    DigitalPin_pt pin_dig1 =
+        DigitalPin_Create(DIGIT_1_PORT, DIGIT_1_PIN, DIGIT_1_FUNC);
+    DigitalPin_pt pin_dig2 =
+        DigitalPin_Create(DIGIT_2_PORT, DIGIT_2_PIN, DIGIT_2_FUNC);
+    DigitalPin_pt pin_dig3 =
+        DigitalPin_Create(DIGIT_3_PORT, DIGIT_3_PIN, DIGIT_3_FUNC);
+    DigitalPin_pt pin_dig4 =
+        DigitalPin_Create(DIGIT_4_PORT, DIGIT_4_PIN, DIGIT_4_FUNC);
+
+    DigitalPin_pt pin_seg_a =
+        DigitalPin_Create(SEGMENT_A_PORT, SEGMENT_A_PIN, SEGMENT_A_FUNC);
+    DigitalPin_pt pin_seg_b =
+        DigitalPin_Create(SEGMENT_B_PORT, SEGMENT_B_PIN, SEGMENT_B_FUNC);
+    DigitalPin_pt pin_seg_c =
+        DigitalPin_Create(SEGMENT_C_PORT, SEGMENT_C_PIN, SEGMENT_C_FUNC);
+    DigitalPin_pt pin_seg_d =
+        DigitalPin_Create(SEGMENT_D_PORT, SEGMENT_D_PIN, SEGMENT_D_FUNC);
+    DigitalPin_pt pin_seg_e =
+        DigitalPin_Create(SEGMENT_E_PORT, SEGMENT_E_PIN, SEGMENT_E_FUNC);
+    DigitalPin_pt pin_seg_f =
+        DigitalPin_Create(SEGMENT_F_PORT, SEGMENT_F_PIN, SEGMENT_F_FUNC);
+    DigitalPin_pt pin_seg_g =
+        DigitalPin_Create(SEGMENT_G_PORT, SEGMENT_G_PIN, SEGMENT_G_FUNC);
+    DigitalPin_pt pin_seg_punto =
+        DigitalPin_Create(SEGMENT_P_PORT, SEGMENT_P_PIN, SEGMENT_P_FUNC);
 
     DigitalPin_GPIO(pin_f1);
     DigitalPin_GPIO(pin_f2);
@@ -186,6 +212,18 @@ board_pt BoardptCreate(void) {
     DigitalPin_GPIO(pin_aceptar);
     DigitalPin_GPIO(pin_rechazar);
     DigitalPin_GPIO(pin_buzzer);
+    DigitalPin_GPIO(pin_dig1);
+    DigitalPin_GPIO(pin_dig2);
+    DigitalPin_GPIO(pin_dig3);
+    DigitalPin_GPIO(pin_dig4);
+    DigitalPin_GPIO(pin_seg_a);
+    DigitalPin_GPIO(pin_seg_b);
+    DigitalPin_GPIO(pin_seg_c);
+    DigitalPin_GPIO(pin_seg_d);
+    DigitalPin_GPIO(pin_seg_e);
+    DigitalPin_GPIO(pin_seg_f);
+    DigitalPin_GPIO(pin_seg_g);
+    DigitalPin_GPIO(pin_seg_punto);
 
     /*  Entradas  */
     AL.f1 = DigitalInput_Create(KEY_F1_GPIO, KEY_F1_BIT, true);
