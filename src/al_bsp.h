@@ -33,7 +33,7 @@
 
 /*==================[inclusions]=============================================*/
 #include "al_gpio.h"
-
+#include "al_display7seg.h"
 /*==================[macros]=================================================*/
 
 /*==================[typedef]================================================*/
@@ -45,6 +45,7 @@ typedef struct board_s {
     DigitalOutput_pt aceptar;
     DigitalOutput_pt rechazar;
     DigitalOutput_pt buz;
+    display_pt       display;
 } const * const board_pt;
 
 /*==================[external data declaration]==============================*/

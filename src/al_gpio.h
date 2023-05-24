@@ -36,6 +36,8 @@
 #define AL_GPIO_H
 
 /*==================[inclusions]=============================================*/
+#include <stdint.h>
+#include <stdbool.h>
 typedef struct DigitalInput *  DigitalInput_pt;
 typedef struct DigitalOutput * DigitalOutput_pt;
 /*==================[macros]=================================================*/
@@ -51,9 +53,9 @@ typedef struct DigitalOutput * DigitalOutput_pt;
  * @param port Puerto
  * @param pin Pin
  * @param inverted Si trabajo con Pull-Down(false) o Pull-Up(true)
- * @return DigitalInput_pt 
+ * @return DigitalInput_pt
  */
-DigitalInput_pt  DigitalInput_Create(uint8_t port, uint8_t pin, bool inverted);
+DigitalInput_pt DigitalInput_Create(uint8_t port, uint8_t pin, bool inverted);
 /**
  * @brief Digital Input Get State
  * Devuelve el estado de la entrada.
@@ -61,7 +63,7 @@ DigitalInput_pt  DigitalInput_Create(uint8_t port, uint8_t pin, bool inverted);
  * @return true Si se encuentra activo.
  * @return false Si no esta activo.
  */
-bool             DigitalInput_GetState(DigitalInput_pt AL);
+bool DigitalInput_GetState(DigitalInput_pt AL);
 /**
  * @brief Digital Input Has Change
  * Evalua si la entrada a cambiado.
@@ -69,7 +71,7 @@ bool             DigitalInput_GetState(DigitalInput_pt AL);
  * @return true Si cambio.
  * @return false Si no cambio.
  */
-bool             DigitalInput_HasChange(DigitalInput_pt AL);
+bool DigitalInput_HasChange(DigitalInput_pt AL);
 /**
  * @brief Digital Input Has Activate
  * Evalua si la entrada a sido activada.
@@ -77,7 +79,7 @@ bool             DigitalInput_HasChange(DigitalInput_pt AL);
  * @return true Si se activo.
  * @return false Si no se activo.
  */
-bool             DigitalInput_HasActivate(DigitalInput_pt AL);
+bool DigitalInput_HasActivate(DigitalInput_pt AL);
 /**
  * @brief Digital Input Has Desactivate
  * Evalua si la entrada a sido desactivada.
@@ -85,14 +87,14 @@ bool             DigitalInput_HasActivate(DigitalInput_pt AL);
  * @return true Si se desactivo.
  * @return false Si sigue activa.
  */
-bool             DigitalInput_HasDesactivate(DigitalInput_pt AL);
+bool DigitalInput_HasDesactivate(DigitalInput_pt AL);
 /**
  * @brief Digital Output Create
  * Crea una salida digital, en la cual debemos proporcionar el pin y puerto.
  * Retorna el puntero de la esctructura creada.
  * @param port Puerto
  * @param pin Pin
- * @return DigitalOutput_pt 
+ * @return DigitalOutput_pt
  */
 DigitalOutput_pt DigitalOutput_Create(uint8_t port, uint8_t pin);
 /**
@@ -100,19 +102,19 @@ DigitalOutput_pt DigitalOutput_Create(uint8_t port, uint8_t pin);
  * Activa la salida solicitada.
  * @param AL Puntero a la salida digital.
  */
-void             DigitalOutput_Activate(DigitalOutput_pt AL);
+void DigitalOutput_Activate(DigitalOutput_pt AL);
 /**
  * @brief Digital Output Desactivate
  * Desactiva la salida solicitada.
  * @param AL Puntero a la salida digital.
  */
-void             DigitalOutput_Desactivate(DigitalOutput_pt AL);
+void DigitalOutput_Desactivate(DigitalOutput_pt AL);
 /**
  * @brief Digital Output Toggle
  * Cambia el estado de la salida proporcionada.
  * @param AL Puntero a la salida digital.
  */
-void             DigitalOutput_Toggle(DigitalOutput_pt AL);
+void DigitalOutput_Toggle(DigitalOutput_pt AL);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

@@ -3,9 +3,14 @@
 /*==================[inclusions]=============================================*/
 #include "al_display7seg.h"
 #include "al_gpio.h"
+#include "al_config_pin.h"
+#include <stdint.h>
+#include "chip.h"
+#include <string.h>
 /*==================[macros and definitions]=================================*/
+#define CANTIDAD_DIGITOS 4
+
 struct display_s {
-    DigitalOutput_pt seg_a;
     DigitalOutput_pt seg_a;
     DigitalOutput_pt seg_b;
     DigitalOutput_pt seg_c;
@@ -14,6 +19,7 @@ struct display_s {
     DigitalOutput_pt seg_f;
     DigitalOutput_pt seg_g;
     DigitalOutput_pt seg_punto;
+    DigitalOutput_pt digitos[CANTIDAD_DIGITOS - 1];
     funcion_pt       funcion;
 };
 
@@ -158,20 +164,25 @@ static void configpin_display(display_pt dis) {
     DigitalPin_GPIO(pin_seg_g);
     DigitalPin_GPIO(pin_seg_punto);
 
-    dis->seg_a     = DigitalOutput_Create(SEGMENT_A_GPIO, SEGMENT_A_BIT);
-    dis->seg_b     = DigitalOutput_Create(SEGMENT_B_GPIO, SEGMENT_B_BIT);
-    dis->seg_c     = DigitalOutput_Create(SEGMENT_C_GPIO, SEGMENT_C_BIT);
-    dis->seg_d     = DigitalOutput_Create(SEGMENT_D_GPIO, SEGMENT_D_BIT);
-    dis->seg_e     = DigitalOutput_Create(SEGMENT_E_GPIO, SEGMENT_E_BIT);
-    dis->seg_f     = DigitalOutput_Create(SEGMENT_F_GPIO, SEGMENT_F_BIT);
-    dis->seg_g     = DigitalOutput_Create(SEGMENT_G_GPIO, SEGMENT_G_BIT);
-    dis->seg_punto = DigitalOutput_Create(SEGMENT_P_GPIO, SEGMENT_P_BIT);
+    dis->seg_a      = DigitalOutput_Create(SEGMENT_A_GPIO, SEGMENT_A_BIT);
+    dis->seg_b      = DigitalOutput_Create(SEGMENT_B_GPIO, SEGMENT_B_BIT);
+    dis->seg_c      = DigitalOutput_Create(SEGMENT_C_GPIO, SEGMENT_C_BIT);
+    dis->seg_d      = DigitalOutput_Create(SEGMENT_D_GPIO, SEGMENT_D_BIT);
+    dis->seg_e      = DigitalOutput_Create(SEGMENT_E_GPIO, SEGMENT_E_BIT);
+    dis->seg_f      = DigitalOutput_Create(SEGMENT_F_GPIO, SEGMENT_F_BIT);
+    dis->seg_g      = DigitalOutput_Create(SEGMENT_G_GPIO, SEGMENT_G_BIT);
+    dis->seg_punto  = DigitalOutput_Create(SEGMENT_P_GPIO, SEGMENT_P_BIT);
+    dis->digitos[0] = DigitalOutput_Create(DIGIT_1_GPIO, DIGIT_1_BIT);
+    dis->digitos[1] = DigitalOutput_Create(DIGIT_2_GPIO, DIGIT_2_BIT);
+    dis->digitos[2] = DigitalOutput_Create(DIGIT_3_GPIO, DIGIT_3_BIT);
+    dis->digitos[3] = DigitalOutput_Create(DIGIT_4_GPIO, DIGIT_4_BIT);
 }
 /*==================[external functions definition]==========================*/
 display_pt DisplayCreate(void) {
     static struct display_s self[1];
     memset(self, 0, sizeof(self));
     configpin_display(self);
+    return self;
 }
 
 /** @ doxygen end group definition */
