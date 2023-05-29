@@ -7,6 +7,7 @@
 #include "al_gpio.h"
 #include <stdbool.h>
 #include "al_display7seg.h"
+#include <string.h>
 
 /*==================[macros and definitions]=================================*/
 
@@ -55,7 +56,7 @@
 #define BUZZER_BIT  2
 
 /*==================[internal data declaration]==============================*/
-static struct board_s AL = {0};
+
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -67,6 +68,8 @@ static struct board_s AL = {0};
 /*==================[external functions definition]==========================*/
 board_pt BoardptCreate(void) {
 
+    static struct board_s self[1];
+    memset(self, 0, sizeof(self));
     /*  Configuracion de pines*/
 
     DigitalPin_pt pin_f1 =
@@ -93,15 +96,15 @@ board_pt BoardptCreate(void) {
     DigitalPin_GPIO(pin_buzzer);
 
     /*  Entradas  */
-    AL.f1 = DigitalInput_Create(KEY_F1_GPIO, KEY_F1_BIT, true);
-    AL.f2 = DigitalInput_Create(KEY_F2_GPIO, KEY_F2_BIT, true);
-    AL.f3 = DigitalInput_Create(KEY_F3_GPIO, KEY_F3_BIT, true);
-    AL.f4 = DigitalInput_Create(KEY_F4_GPIO, KEY_F4_BIT, true);
+    self->f1 = DigitalInput_Create(KEY_F1_GPIO, KEY_F1_BIT, true);
+    self->f2 = DigitalInput_Create(KEY_F2_GPIO, KEY_F2_BIT, true);
+    self->f3 = DigitalInput_Create(KEY_F3_GPIO, KEY_F3_BIT, true);
+    self->f4 = DigitalInput_Create(KEY_F4_GPIO, KEY_F4_BIT, true);
 
     /*  Salidas  */
-    AL.buz     = DigitalOutput_Create(BUZZER_GPIO, BUZZER_BIT);
-    AL.display = DisplayCreate();
-    return &AL;
+    self->buz     = DigitalOutput_Create(BUZZER_GPIO, BUZZER_BIT);
+    self->display = DisplayCreate();
+    return self;
 }
 
 /**  doxygen end group definition */

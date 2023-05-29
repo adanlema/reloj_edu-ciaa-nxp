@@ -11,6 +11,7 @@
 #define CANTIDAD_DIGITOS 4
 
 struct display_s {
+    DigitalOutput_pt segmentos[7];
     DigitalOutput_pt seg_a;
     DigitalOutput_pt seg_b;
     DigitalOutput_pt seg_c;
@@ -183,6 +184,17 @@ display_pt DisplayCreate(void) {
     memset(self, 0, sizeof(self));
     configpin_display(self);
     return self;
+}
+
+void DisplayWrite(display_pt AL, DigitalOutput_pt digito, char * cadena,
+                  uint8_t size) {
+    DigitalOutput_Activate(digito);
+    for (int index = 0; index < 7; index++) {
+        if (cadena[index]) {
+            DigitalOutput_Activate(AL->segmentos[index]);
+        }
+    }
+    DigitalOutput_Desactivate(digito);
 }
 
 /** @ doxygen end group definition */

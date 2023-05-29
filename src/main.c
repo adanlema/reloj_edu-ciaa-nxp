@@ -58,6 +58,9 @@ int main(void) {
     board_pt edu_cia = BoardptCreate();
 
     while (true) {
+        if (DigitalInput_HasActivate(edu_cia->f1))
+            DigitalOutput_Toggle(edu_cia->buz);
+
         for (int index = 0; index < 100; index++) {
             for (int delay = 0; delay < 25000; delay++) {
                 __asm("NOP");
