@@ -3,7 +3,7 @@ UseTab: Never
 IndentWidth: 4
 TabWidth: 4
 BreakBeforeBraces: Attach
-ColumnLimit: 80
+ColumnLimit: 100
 AccessModifierOffset: -4
 
 # Alineado de funciones y Estructuras

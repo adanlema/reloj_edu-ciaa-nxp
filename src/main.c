@@ -1,36 +1,4 @@
-/** Copyright 2022, Adan Lema <adanlema@hotmail.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived from this
- *    software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
-/** \brief HAL_GPIO
- ** \brief Implementacion de las funciones de una HAL_GPIO
- ** @{ */
+/* Copyright 2022, Adan Lema <adanlema@hotmail.com> */
 
 /*==================[inclusions]=============================================*/
 
@@ -38,34 +6,53 @@
 #include "chip.h"
 #include "al_gpio.h"
 #include "al_bsp.h"
-/*==================[macros and definitions]=================================*/
+#include "al_display7seg.h"
 
+/*==================[macros and definitions]=================================*/
+#define num_0 0b00111111
+// const uint8_t segment_display[] = {
+//     0b00111111, // 0
+//     0b00000110, // 1
+//     0b01011011, // 2
+//     0b01001111, // 3
+//     0b01100110, // 4
+//     0b01101101, // 5
+//     0b01111101, // 6
+//     0b00000111, // 7
+//     0b01111111, // 8
+//     0b01101111  // 9
+// };
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
-
+void DelayBase(void);
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
-
+void DelayBase(void) {
+    for (int index = 0; index < 100; index++) {
+        for (int delay = 0; delay < 25000; delay++) {
+            __asm("NOP");
+        }
+    }
+}
 /*==================[external functions definition]==========================*/
 
 int main(void) {
 
-    int      divisor = 0;
     board_pt edu_cia = BoardptCreate();
 
     while (true) {
-        if (DigitalInput_HasActivate(edu_cia->f1))
-            DigitalOutput_Toggle(edu_cia->buz);
+        // if (DigitalInput_HasActivate(edu_cia->f1))
+        //     DigitalOutput_Toggle(edu_cia->buz);
 
-        for (int index = 0; index < 100; index++) {
-            for (int delay = 0; delay < 25000; delay++) {
-                __asm("NOP");
-            }
-        }
+        DigitalOutput_Activate(edu_cia->display->digito_1);
+        DisplayClear(edu_cia->display, edu_cia->display->digito_1);
+        DisplayWrite(edu_cia->display, edu_cia->display->digito_1, num_0);
+        DelayBase();
+        DigitalOutput_Desactivate(edu_cia->display->digito_1);
     }
 }
 
