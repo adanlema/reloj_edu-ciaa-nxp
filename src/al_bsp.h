@@ -5,7 +5,7 @@
 
 /*==================[inclusions]=============================================*/
 #include "al_gpio.h"
-#include "al_display7seg.h"
+#include "al_display.h"
 /*==================[macros]=================================================*/
 
 /*==================[typedef]================================================*/
@@ -17,12 +17,13 @@ typedef struct board_s {
     DigitalOutput_pt aceptar;
     DigitalOutput_pt rechazar;
     DigitalOutput_pt buz;
-    display_pt       display;
+    display_t        display;
 } const * const board_pt;
 
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
+
 /**
  * @brief Board Create
  * Se encarga de crear una placa, la cual contendra cuatro entradas digitales y
