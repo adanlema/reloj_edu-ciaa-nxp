@@ -9,17 +9,18 @@
 /*==================[macros]=================================================*/
 
 /*==================[typedef]================================================*/
-typedef struct board_s {
+struct board_s {
     DigitalInput_pt  f1;
     DigitalInput_pt  f2;
     DigitalInput_pt  f3;
     DigitalInput_pt  f4;
-    DigitalOutput_pt aceptar;
-    DigitalOutput_pt rechazar;
+    DigitalInput_pt  aceptar;
+    DigitalInput_pt  rechazar;
     DigitalOutput_pt buz;
     display_t        display;
-} const * const board_pt;
-
+};
+// } const * const board_pt;
+typedef struct board_s * board_pt;
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/

@@ -36,7 +36,7 @@
 #include <stdbool.h>
 #include "al_gpio.h"
 /*==================[macros and definitions]=================================*/
-#define CANTIDAD 10
+#define CANTIDAD 20
 
 struct DigitalInput {
     uint8_t port;

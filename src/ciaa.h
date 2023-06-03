@@ -1,10 +1,10 @@
 /* Copyright 2023, Adan Lema <adanlema@hotmail.com> */
 
-#ifndef TEMPLATE_H
-#define TEMPLATE_H
+#ifndef CIAA_H
+#define CIAA_H
 
 /*==================[inclusions]=============================================*/
-
+#include "chip.h"
 /*==================[macros]=================================================*/
 #define DIGITS_GPIO  0
 
@@ -100,11 +100,70 @@
 #define SEGMENT_P_GPIO 5
 #define SEGMENT_P_BIT  16
 
+// Definiciones de los recursos asociados a las teclas del puncho
+#define KEY_F1_PORT     4
+#define KEY_F1_PIN      8
+#define KEY_F1_FUNC     (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
+#define KEY_F1_GPIO     5
+#define KEY_F1_BIT      12
+
+#define KEY_F2_PORT     4
+#define KEY_F2_PIN      9
+#define KEY_F2_FUNC     (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
+#define KEY_F2_GPIO     5
+#define KEY_F2_BIT      13
+
+#define KEY_F3_PORT     4
+#define KEY_F3_PIN      10
+#define KEY_F3_FUNC     (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
+#define KEY_F3_GPIO     5
+#define KEY_F3_BIT      14
+
+#define KEY_F4_PORT     6
+#define KEY_F4_PIN      7
+#define KEY_F4_FUNC     (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
+#define KEY_F4_GPIO     5
+#define KEY_F4_BIT      15
+
+#define KEY_ACCEPT_PIN  2
+#define KEY_ACCEPT_PORT 3
+#define KEY_ACCEPT_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
+#define KEY_ACCEPT_GPIO 5
+#define KEY_ACCEPT_BIT  9
+
+#define KEY_CANCEL_PORT 3
+#define KEY_CANCEL_PIN  1
+#define KEY_CANCEL_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_PULLUP)
+#define KEY_CANCEL_GPIO 5
+#define KEY_CANCEL_BIT  8
+
+// Definiciones de los recursos asociados al zumbador
+#define LED_1_PORT 2
+#define LED_1_PIN  10
+#define LED_2_PORT 2
+#define LED_2_PIN  11
+
+#define LED_R_PORT 2
+#define LED_R_PIN  0
+#define LED_R_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_G_PORT 2
+#define LED_G_PIN  1
+#define LED_B_PORT 2
+#define LED_B_PIN  2
+
+#define LED_3_PORT 2
+#define LED_3_PIN  12
+#define LED_3_FUNC (SCU_MODE_FUNC0 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_3_GPIO 1
+#define LED_3_BIT  12
+
 /*==================[typedef]================================================*/
 
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
+void configpin_display(void);
+void configpin_keys(void);
 
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
