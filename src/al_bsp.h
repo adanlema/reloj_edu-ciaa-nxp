@@ -19,8 +19,8 @@ struct board_s {
     DigitalOutput_pt buz;
     display_t        display;
 };
-// } const * const board_pt;
-typedef struct board_s * board_pt;
+// } const * const board_t;
+typedef struct board_s * board_t;
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
@@ -29,9 +29,9 @@ typedef struct board_s * board_pt;
  * @brief Board Create
  * Se encarga de crear una placa, la cual contendra cuatro entradas digitales y
  * seis salidas digitales.
- * @return board_pt Retorna el puntero de la estructura de la placa.
+ * @return board_t Retorna el puntero de la estructura de la placa.
  */
-board_pt BoardptCreate(void);
+board_t board_Create(void);
 
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

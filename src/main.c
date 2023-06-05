@@ -24,31 +24,28 @@
 
 int main(void) {
 
-    board_pt board = BoardptCreate();
+    board_t board = board_Create();
 
     while (true) {
 
-        if (DigitalInput_HasActivate(board->f2)) {
-            DigitalOutput_Toggle(board->buz);
-        }
         if (DigitalInput_HasActivate(board->f3)) {
-            DigitalOutput_Toggle(board->buz);
+            DigitalOutput_Activate(board->buz);
         }
-        // if (DigitalInput_HasActivate(board->f4)) {
-        //     DigitalOutput_Toggle(board->buz);
-        // }
-
-        if (DigitalInput_HasActivate(board->f1)) {
-            DisplayWriteBCD(board->display, (uint8_t[]){1, 2, 3, 4}, 4);
+        if (DigitalInput_HasActivate(board->f4)) {
+            DigitalOutput_Desactivate(board->buz);
         }
 
-        // if (DigitalInput_HasActivate(board->rechazar)) {
-        //     DisplayWriteBCD(board->display, NULL, 0);
-        // }
+        if (DigitalInput_HasActivate(board->f1) | DigitalInput_HasActivate(board->aceptar)) {
+            DisplayWriteBCD(board->display, (uint8_t[]){0, 9, 1, 2}, 4);
+        }
+        if (DigitalInput_HasActivate(board->f2) | DigitalInput_HasActivate(board->rechazar)) {
+            DisplayWriteBCD(board->display, NULL, 0);
+        }
+
         DisplayRefresh(board->display);
 
         for (int index = 0; index < 100; index++) {
-            for (int delay = 0; delay < 25000; delay++) {
+            for (int delay = 0; delay < 500; delay++) {
                 __asm("NOP");
             }
         }

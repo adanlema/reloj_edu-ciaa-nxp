@@ -6,7 +6,7 @@
 #include <stdbool.h>
 /*==================[macros and definitions]=================================*/
 
-#define CANTIDAD 20
+#define CANTIDAD 30
 
 struct DigitalPin {
     uint8_t  port;
