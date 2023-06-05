@@ -20,9 +20,9 @@ static void config_pin_botones(void);
 static void config_pin_digitos(void);
 static void config_pin_segmentos(void);
 
-void        ScreenTurnOff(void);
-void        ScreenTurnOn(uint8_t segments);
-void        DigitTurnOn(uint8_t digit);
+void        DisplayApagar(void);
+void        DisplayEncenderSegmento(uint8_t segments);
+void        DisplayEncenderDigito(uint8_t digit);
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
@@ -116,18 +116,18 @@ static void config_pin_segmentos(void) {
     Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, SEGMENT_P_GPIO, SEGMENT_P_BIT, true);
 }
 
-void ScreenTurnOff(void) {
+void DisplayApagar(void) {
     Chip_GPIO_ClearValue(LPC_GPIO_PORT, DIGITS_GPIO, DIGITS_MASK);
     Chip_GPIO_ClearValue(LPC_GPIO_PORT, SEGMENTS_GPIO, SEGMENTS_MASK);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, SEGMENT_P_GPIO, SEGMENT_P_BIT, false);
 }
 
-void ScreenTurnOn(uint8_t segments) {
+void DisplayEncenderSegmento(uint8_t segments) {
     Chip_GPIO_SetValue(LPC_GPIO_PORT, SEGMENTS_GPIO, (segments)&SEGMENTS_MASK);
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, SEGMENT_P_GPIO, SEGMENT_P_BIT, (segments & SEGMENTO_P));
 }
 
-void DigitTurnOn(uint8_t digit) {
+void DisplayEncenderDigito(uint8_t digit) {
     Chip_GPIO_SetValue(LPC_GPIO_PORT, DIGITS_GPIO, (1 << (3 - digit)) & DIGITS_MASK);
 }
 
@@ -149,9 +149,9 @@ board_t board_Create(void) {
     /*  Salidas  */
     board.buz     = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
     board.display = DisplayCreate(4, &(struct display_driver_s){
-                                         .ScreenTurnOff = ScreenTurnOff,
-                                         .ScreenTurnOn  = ScreenTurnOn,
-                                         .DigitTurnOn   = DigitTurnOn,
+                                         .DisplayApagar           = DisplayApagar,
+                                         .DisplayEncenderSegmento = DisplayEncenderSegmento,
+                                         .DisplayEncenderDigito   = DisplayEncenderDigito,
                                      });
     return &board;
 }

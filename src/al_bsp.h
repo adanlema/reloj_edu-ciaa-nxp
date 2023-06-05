@@ -9,6 +9,7 @@
 /*==================[macros]=================================================*/
 
 /*==================[typedef]================================================*/
+//! Estructura de la placa que utilizaremos para el reloj despertador.
 struct board_s {
     DigitalInput_pt  f1;
     DigitalInput_pt  f2;
@@ -19,7 +20,7 @@ struct board_s {
     DigitalOutput_pt buz;
     display_t        display;
 };
-// } const * const board_t;
+//! Creacion de un tipo de dato que es un puntero a una estructura de la placa.
 typedef struct board_s * board_t;
 /*==================[external data declaration]==============================*/
 

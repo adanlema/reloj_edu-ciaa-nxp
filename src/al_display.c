@@ -37,6 +37,7 @@ static const uint8_t IMAGENES[] = {
 };
 /*==================[internal functions declaration]=========================*/
 static display_t DisplayReservar(void);
+static void      DisplayBorrarMemoria(display_t display_dato);
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
@@ -46,6 +47,9 @@ static display_t DisplayReservar(void) {
     static struct display_s dis[1] = {0};
     return &dis[0];
 }
+static void DisplayBorrarMemoria(display_t display_dato) {
+    memset(display_dato->memoria, 0, sizeof(display_dato->memoria));
+}
 /*==================[external functions definition]==========================*/
 
 display_t DisplayCreate(uint8_t digitos, display_driver_t driver_dato) {
@@ -54,14 +58,14 @@ display_t DisplayCreate(uint8_t digitos, display_driver_t driver_dato) {
         display->digitos       = digitos;
         display->digito_activo = digitos - 1;
         memcpy(display->driver, driver_dato, sizeof(display->driver));
-        memset(display->memoria, 0, sizeof(display->memoria));
-        display->driver->ScreenTurnOff();
+        DisplayBorrarMemoria(display);
+        display->driver->DisplayApagar();
     }
     return display;
 }
 
 void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size) {
-    memset(display->memoria, 0, sizeof(display->memoria));
+    DisplayBorrarMemoria(display);
     for (int indice = 0; indice < size; indice++) {
         if (indice >= display->digitos)
             break;
@@ -70,10 +74,10 @@ void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size) {
 }
 
 void DisplayRefresh(display_t display) {
-    display->driver->ScreenTurnOff();
+    display->driver->DisplayApagar();
     display->digito_activo = (display->digito_activo + 1) % display->digitos;
-    display->driver->ScreenTurnOn(display->memoria[display->digito_activo]);
-    display->driver->DigitTurnOn(display->digito_activo);
+    display->driver->DisplayEncenderSegmento(display->memoria[display->digito_activo]);
+    display->driver->DisplayEncenderDigito(display->digito_activo);
 }
 
 /** @ doxygen end group definition */

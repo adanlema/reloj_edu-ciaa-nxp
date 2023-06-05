@@ -21,24 +21,43 @@
 //! Puntero a una estructura del tipo *display_s*
 typedef struct display_s * display_t;
 //! Funcion de callback para apagar la pantalla
-typedef void (*display_segments_off_t)(void);
+typedef void (*display_apagar_t)(void);
 //! Funcion de callback para prender los segmentos de la pantalla
-typedef void (*display_segments_on_t)(uint8_t segmentos);
+typedef void (*display_encender_segmento_t)(uint8_t segmentos);
 //! Funcion de callback para prender un digito en la pantalla
-typedef void (*display_digit_on_t)(uint8_t digitos);
+typedef void (*display_encender_digito_t)(uint8_t digitos);
 //! Estructura para manejar el display
 typedef struct display_driver_s {
-    display_segments_off_t ScreenTurnOff; //!
-    display_segments_on_t  ScreenTurnOn;  //!
-    display_digit_on_t     DigitTurnOn;   //!
+    display_apagar_t            DisplayApagar;           //! Funcion para apagar el display.
+    display_encender_segmento_t DisplayEncenderSegmento; //! Funcion para encender los segmentos.
+    display_encender_digito_t   DisplayEncenderDigito;   //! Funcion para encender un digito.
 } const * const display_driver_t;
 
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
-display_t DisplayCreate(uint8_t digitos, display_driver_t driver);
-void      DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size);
-void      DisplayRefresh(display_t display);
+/**
+ * @brief Funcion para crear un display.
+ * Se encarga de devolver un puntero a la estructura de un display.
+ * @param digitos Cantidad de digitos del display.
+ * @param driver_dato Driver que utilizara el display para encender,apagar los digitos/segmentos
+ * @return display_t Puntero a la estructura del display creada.
+ */
+display_t DisplayCreate(uint8_t digitos, display_driver_t driver_dato);
+/**
+ * @brief Funcion para escribir en el display
+ * Es una funcion que escribe en el display utilizando BCD.
+ * @param display Puntero al display.
+ * @param number Cadena que desea escribir.
+ * @param size Tamaño de digitos del display.
+ */
+void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size);
+/**
+ * @brief Funcion para refrescar el display
+ * Es una funcion para colocar lo que guarda en memoria el display y ponerlo en la pantalla.
+ * @param display Puntero al display.
+ */
+void DisplayRefresh(display_t display);
 
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
