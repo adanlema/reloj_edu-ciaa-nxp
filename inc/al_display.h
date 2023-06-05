@@ -27,10 +27,16 @@ typedef void (*display_encender_segmento_t)(uint8_t segmentos);
 //! Funcion de callback para prender un digito en la pantalla
 typedef void (*display_encender_digito_t)(uint8_t digitos);
 //! Estructura para manejar el display
+/**
+ * @brief
+ * @param DisplayApagar Funcion para apagar el display.
+ * @param DisplayEncenderSegmento Funcion para encender los segmentos.
+ * @param DisplayEncenderDigito Funcion para encender un digito.
+ */
 typedef struct display_driver_s {
-    display_apagar_t            DisplayApagar;           //! Funcion para apagar el display.
-    display_encender_segmento_t DisplayEncenderSegmento; //! Funcion para encender los segmentos.
-    display_encender_digito_t   DisplayEncenderDigito;   //! Funcion para encender un digito.
+    display_apagar_t            DisplayApagar;
+    display_encender_segmento_t DisplayEncenderSegmento;
+    display_encender_digito_t   DisplayEncenderDigito;
 } const * const display_driver_t;
 
 /*==================[external data declaration]==============================*/

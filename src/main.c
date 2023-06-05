@@ -39,7 +39,7 @@ int main(void) {
             DisplayWriteBCD(board->display, (uint8_t[]){0, 9, 1, 2}, 4);
         }
         if (DigitalInput_HasActivate(board->aceptar)) {
-            DisplayWriteBCD(board->display, (uint8_t[]){0, 2, 0, 8}, 4);
+            DisplayWriteBCD(board->display, (uint8_t[]){2, 0, 1, 8}, 4);
         }
         if (DigitalInput_HasActivate(board->f2) | DigitalInput_HasActivate(board->rechazar)) {
             DisplayWriteBCD(board->display, NULL, 0);
