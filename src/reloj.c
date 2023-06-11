@@ -85,7 +85,6 @@ bool ClockSetTime(clock_t reloj, const uint8_t * hora, int size) {
 
 void ClockTick(clock_t reloj) {
     reloj->ticks++;
-
     ClockIncrement_seg(reloj);
     ClockIncrement(reloj, UNIDAD_SEG, UNIDAD_TIME); // INCREMENTAR_DECENAS_SEG
     ClockIncrement(reloj, DECENA_SEG, DECENA_TIME); // INCREMENTAR_MINUTOS_UNIDAD
@@ -94,11 +93,11 @@ void ClockTick(clock_t reloj) {
     ClockIncrement(reloj, UNIDAD_HOR, UNIDAD_TIME); // INCREMENTAR_HORAS_DECENAS
     ClockIncrement_day(reloj);
 
-    if (reloj->alarma->estado) {
-        if ((memcmp(reloj->alarma->time, reloj->time, TIME_SIZE)) == 0) {
-            reloj->funcion();
-        }
-    }
+    // if (reloj->alarma->estado) {
+    //     if ((memcmp(reloj->alarma->time, reloj->time, TIME_SIZE)) == 0) {
+    //         reloj->funcion(board_educia);
+    //     }
+    // }
 }
 
 void ClockSetAlarma(clock_t reloj, const uint8_t * hora, int size) {

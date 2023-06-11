@@ -4,6 +4,7 @@
 /*==================[inclusions]=============================================*/
 #include <stdbool.h>
 #include <stdint.h>
+#include "al_bsp.h"
 /*==================[macros]=================================================*/
 #define TIME_SIZE 6
 #define TIME_POST 5
@@ -21,7 +22,7 @@
 /*==================[typedef]================================================*/
 typedef struct clock_s *  clock_t;
 typedef struct alarma_s * alarma_pt;
-typedef void (*evento_pt)(void);
+typedef void (*evento_pt)(board_t);
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
