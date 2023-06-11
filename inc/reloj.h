@@ -22,7 +22,7 @@
 /*==================[typedef]================================================*/
 typedef struct clock_s *  clock_t;
 typedef struct alarma_s * alarma_pt;
-typedef void (*evento_pt)(board_t);
+typedef void (*evento_pt)(void);
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/

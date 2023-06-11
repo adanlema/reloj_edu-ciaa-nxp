@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include "chip.h"
+#include "ciaa.h"
 #include "al_gpio.h"
 #include "al_bsp.h"
 #include "al_display.h"
@@ -15,7 +16,7 @@
 
 /*==================[internal functions declaration]=========================*/
 static void SysTickConfig(uint32_t ticks);
-void        ActivarAlarma(board_t self);
+void        ActivarAlarma(void);
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
@@ -30,8 +31,8 @@ static void SysTickConfig(uint32_t ticks) {
     NVIC_EnableIRQ(SysTick_IRQn);
     __enable_irq();
 }
-void ActivarAlarma(board_t self) {
-    DigitalOutput_Activate(self->buz);
+void ActivarAlarma(void) {
+    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, true);
 }
 /*==================[external functions definition]==========================*/
 
@@ -42,6 +43,8 @@ int main(void) {
 
     SysTickConfig(1000);
     ClockSetTime(reloj, (uint8_t[]){0, 8, 0, 0, 0, 0}, 6);
+    ClockSetAlarma(reloj, (uint8_t[]){1, 0, 0, 0, 0, 0}, 4);
+
     while (true) {
 
         ClockGetTime(reloj, hora_actual, 4);
