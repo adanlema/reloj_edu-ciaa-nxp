@@ -34,6 +34,9 @@ typedef struct board_s * board_t;
  */
 board_t board_Create(void);
 
+void    SysTickConfig(uint32_t ticks);
+void    ActivarAlarma(void);
+
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

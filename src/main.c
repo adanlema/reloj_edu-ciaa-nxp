@@ -3,8 +3,6 @@
 /*==================[inclusions]=============================================*/
 
 #include <stdbool.h>
-#include "chip.h"
-#include "ciaa.h"
 #include "al_gpio.h"
 #include "al_bsp.h"
 #include "al_display.h"
@@ -15,40 +13,35 @@
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
-static void SysTickConfig(uint32_t ticks);
-void        ActivarAlarma(void);
+
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
-board_t board_educia;
-clock_t reloj;
+board_t        board_educia;
+clock_t        reloj;
+static uint8_t hora_actual[TIME_SIZE];
 /*==================[internal functions definition]==========================*/
-static void SysTickConfig(uint32_t ticks) {
-    SystemCoreClockUpdate();
-    SysTick_Config(SystemCoreClock / ticks);
 
-    __disable_irq();
-    NVIC_EnableIRQ(SysTick_IRQn);
-    __enable_irq();
-}
-void ActivarAlarma(void) {
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, true);
-}
 /*==================[external functions definition]==========================*/
 
 int main(void) {
     board_educia = board_Create();
     reloj        = ClockCreate(10, ActivarAlarma);
-    uint8_t hora_actual[TIME_SIZE];
 
     SysTickConfig(1000);
-    ClockSetTime(reloj, (uint8_t[]){0, 8, 0, 0, 0, 0}, 6);
-    ClockSetAlarma(reloj, (uint8_t[]){1, 0, 0, 0, 0, 0}, 4);
+    ClockSetTime(reloj, (uint8_t[]){0, 8, 3, 0, 0, 0}, 6);
+    ClockSetAlarma(reloj, (uint8_t[]){0, 9, 0, 0, 0, 0}, 4);
 
     while (true) {
 
-        ClockGetTime(reloj, hora_actual, 4);
-        DisplayWriteBCD(board_educia->display, hora_actual, 4);
+        if (DigitalInput_HasActivate(board_educia->aceptar)) {
+            ClockPosponerAlarma(reloj, TIME_POST);
+            DigitalOutput_Desactivate(board_educia->buz);
+        }
+        if (DigitalInput_HasActivate(board_educia->rechazar)) {
+            ClockCancelarAlarma(reloj);
+            DigitalOutput_Desactivate(board_educia->buz);
+        }
 
         if (DigitalInput_HasActivate(board_educia->f3)) {
             DigitalOutput_Activate(board_educia->buz);
@@ -61,6 +54,8 @@ int main(void) {
 
 void SysTick_Handler(void) {
     ClockTick(reloj);
+    ClockGetTime(reloj, hora_actual, 4);
+    DisplayWriteBCD(board_educia->display, hora_actual, 4);
     DisplayRefresh(board_educia->display);
 }
 /** @ doxygen end group definition */

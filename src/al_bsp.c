@@ -155,5 +155,18 @@ board_t board_Create(void) {
                                      });
     return &board;
 }
+
+void SysTickConfig(uint32_t ticks) {
+    SystemCoreClockUpdate();
+    SysTick_Config(SystemCoreClock / ticks);
+
+    __disable_irq();
+    NVIC_EnableIRQ(SysTick_IRQn);
+    __enable_irq();
+}
+void ActivarAlarma(void) {
+    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, true);
+}
+
 /**  doxygen end group definition */
 /*==================[end of file]============================================*/

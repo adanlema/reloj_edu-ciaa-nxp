@@ -19,6 +19,16 @@
         SIGUIENTE += 1;                                                                            \
     }
 
+#define CONTROLAR_REBALSE_HOR(DECENA, UNIDAD)                                                      \
+    if (UNIDAD > 9) {                                                                              \
+        UNIDAD = 0;                                                                                \
+        DECENA += 1;                                                                               \
+    }                                                                                              \
+    if ((UNIDAD >= 4) & (DECENA >= 2)) {                                                           \
+        UNIDAD = 0;                                                                                \
+        DECENA = 0;                                                                                \
+    }
+
 /*==================[typedef]================================================*/
 typedef struct clock_s *  clock_t;
 typedef struct alarma_s * alarma_pt;

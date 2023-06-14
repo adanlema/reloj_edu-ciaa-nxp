@@ -126,6 +126,7 @@ void ClockPosponerAlarma(clock_t reloj, uint8_t time_post) {
     reloj->alarma->time[UNIDAD_MIN] += time_post;
     CONTROLAR_REBALSE_MIN(reloj->alarma->time[DECENA_MIN], reloj->alarma->time[UNIDAD_MIN],
                           reloj->alarma->time[UNIDAD_HOR]);
+    CONTROLAR_REBALSE_HOR(reloj->alarma->time[DECENA_HOR], reloj->alarma->time[UNIDAD_HOR]);
 }
 void ClockCancelarAlarma(clock_t reloj) {
     if (reloj->alarma->postergada) {
