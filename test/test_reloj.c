@@ -54,7 +54,7 @@ void CancelarAlarma(void) {
 
 void setUp(void) {
     alarm_event_fired = false;
-    reloj             = ClockCreate(TICKS_POR_SEG, CaptureAlarmEvent);
+    reloj             = ClockCreate(TICKS_POR_SEG, CaptureAlarmEvent, CancelarAlarma);
     ClockSetTime(reloj, INICIAL, sizeof(INICIAL));
 }
 
@@ -62,7 +62,7 @@ void setUp(void) {
 void test_start_up(void) {
     static const uint8_t ESPERADO[] = {0, 0, 0, 0, 0, 0};
     hora[0]                         = 1;
-    clock_t reloj                   = ClockCreate(TICKS_POR_SEG, CaptureAlarmEvent);
+    clock_t reloj                   = ClockCreate(TICKS_POR_SEG, CaptureAlarmEvent, CancelarAlarma);
 
     TEST_ASSERT_FALSE(ClockGetTime(reloj, hora, 6));
     TEST_ASSERT_EQUAL_UINT8_ARRAY(ESPERADO, hora, 6);
@@ -71,7 +71,7 @@ void test_start_up(void) {
 //‣ Al ajustar la hora el reloj queda en hora y es válida.
 void test_ajustar_hora(void) {
     static const uint8_t ESPERADO[] = {1, 2, 3, 4, 0, 0};
-    clock_t              reloj      = ClockCreate(TICKS_POR_SEG, CaptureAlarmEvent);
+    clock_t              reloj      = ClockCreate(TICKS_POR_SEG, CaptureAlarmEvent, CancelarAlarma);
 
     TEST_ASSERT_TRUE(ClockSetTime(reloj, ESPERADO, 4));
     TEST_ASSERT_TRUE(ClockGetTime(reloj, hora, 6));
@@ -184,7 +184,7 @@ void test_cancelar_alarma(void) {
     TEST_ASSERT_TRUE(alarm_event_fired);
 
     SIMULAR_SEGUNDOS(1, ClockTick(reloj));
-    CancelarAlarma();
+    ClockCancelarAlarma(reloj);
     TEST_ASSERT_FALSE(alarm_event_fired);
 
     SIMULAR_SEGUNDOS(24 * 60 * 60, ClockTick(reloj));
@@ -202,15 +202,14 @@ void test_posponer_alarma(void) {
 
     SIMULAR_SEGUNDOS(1, ClockTick(reloj));
     ClockPosponerAlarma(reloj, TIME_POST);
-    CancelarAlarma();
 
     SIMULAR_SEGUNDOS(TIME_POST * 60, ClockTick(reloj));
     TEST_ASSERT_TRUE(alarm_event_fired);
     ClockCancelarAlarma(reloj);
 
-    SIMULAR_SEGUNDOS(23 * 55 * 60, ClockTick(reloj));
+    SIMULAR_SEGUNDOS(24 * 60 * 60, ClockTick(reloj));
     TEST_ASSERT_TRUE(alarm_event_fired);
-    CancelarAlarma();
+    ClockCancelarAlarma(reloj);
 }
 
 /*

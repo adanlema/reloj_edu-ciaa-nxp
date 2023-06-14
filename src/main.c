@@ -26,7 +26,7 @@ static uint8_t hora_actual[TIME_SIZE];
 
 int main(void) {
     board_educia = board_Create();
-    reloj        = ClockCreate(10, ActivarAlarma);
+    reloj        = ClockCreate(5, AlarmaOn, AlarmaOff);
 
     SysTickConfig(1000);
     ClockSetTime(reloj, (uint8_t[]){0, 8, 3, 0, 0, 0}, 6);
@@ -36,11 +36,9 @@ int main(void) {
 
         if (DigitalInput_HasActivate(board_educia->aceptar)) {
             ClockPosponerAlarma(reloj, TIME_POST);
-            DigitalOutput_Desactivate(board_educia->buz);
         }
         if (DigitalInput_HasActivate(board_educia->rechazar)) {
             ClockCancelarAlarma(reloj);
-            DigitalOutput_Desactivate(board_educia->buz);
         }
 
         if (DigitalInput_HasActivate(board_educia->f3)) {

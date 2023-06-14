@@ -164,8 +164,11 @@ void SysTickConfig(uint32_t ticks) {
     NVIC_EnableIRQ(SysTick_IRQn);
     __enable_irq();
 }
-void ActivarAlarma(void) {
+void AlarmaOn(void) {
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, true);
+}
+void AlarmaOff(void) {
+    Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, false);
 }
 
 /**  doxygen end group definition */

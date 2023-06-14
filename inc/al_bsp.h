@@ -33,9 +33,23 @@ typedef struct board_s * board_t;
  * @return board_t Retorna el puntero de la estructura de la placa.
  */
 board_t board_Create(void);
-
-void    SysTickConfig(uint32_t ticks);
-void    ActivarAlarma(void);
+/**
+ * @brief Configurar el SysTick
+ * Se encarga de configurar el SysTick, habilitando sus interrupciones y pasamos el valor  de
+ * interrupciones que tendremos por segundo.
+ * @param ticks interrupciones por segundo.
+ */
+void SysTickConfig(uint32_t ticks);
+/**
+ * @brief Enciende la Alarma
+ * Se encarga de encender la alarma, haciendo sonar el buzzer.
+ */
+void AlarmaOn(void);
+/**
+ * @brief Apaga la Alarma
+ * Se encarga de apagar la alarma, apagando el buzzer.
+ */
+void AlarmaOff(void);
 
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

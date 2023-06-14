@@ -36,7 +36,7 @@ typedef void (*evento_pt)(void);
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
-clock_t ClockCreate(int tics_por_seg, evento_pt funcion);
+clock_t ClockCreate(int tics_por_seg, evento_pt encender, evento_pt apagar);
 void    ClockTick(clock_t reloj);
 
 bool    ClockGetTime(clock_t reloj, uint8_t * hora, int size);

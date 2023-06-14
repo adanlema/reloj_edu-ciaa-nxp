@@ -14,10 +14,12 @@
 #define DECENA_HOR  0
 
 struct alarma_s {
-    uint8_t time[TIME_SIZE];
-    uint8_t time_pos[TIME_SIZE];
-    bool    estado;
-    bool    postergada;
+    uint8_t   time[TIME_SIZE];
+    uint8_t   time_pos[TIME_SIZE];
+    bool      estado;
+    bool      postergada;
+    evento_pt encender;
+    evento_pt apagar;
 };
 
 struct clock_s {
@@ -26,7 +28,6 @@ struct clock_s {
     uint32_t  ticks_por_seg;
     bool      valida;
     alarma_pt alarma;
-    evento_pt funcion;
 };
 
 /*==================[internal data declaration]==============================*/
@@ -63,13 +64,14 @@ static void ClockIncrement(clock_t reloj, uint8_t indice, uint8_t valor) {
 }
 
 /*==================[external functions definition]==========================*/
-clock_t ClockCreate(int tics_por_seg, evento_pt funcion) {
+clock_t ClockCreate(int tics_por_seg, evento_pt encender, evento_pt apagar) {
     memset(self, 0, sizeof(self));
     memset(al_reloj, 0, sizeof(al_reloj));
 
-    self->ticks_por_seg = tics_por_seg;
-    self->alarma        = al_reloj;
-    self->funcion       = funcion;
+    self->ticks_por_seg    = tics_por_seg;
+    self->alarma           = al_reloj;
+    self->alarma->encender = encender;
+    self->alarma->apagar   = apagar;
     return self;
 }
 bool ClockGetTime(clock_t reloj, uint8_t * hora, int size) {
@@ -95,7 +97,7 @@ void ClockTick(clock_t reloj) {
 
     if (reloj->alarma->estado) {
         if ((memcmp(reloj->alarma->time, reloj->time, TIME_SIZE)) == 0) {
-            reloj->funcion();
+            reloj->alarma->encender();
         }
     }
 }
@@ -120,21 +122,27 @@ void ClockToggleAlarma(clock_t reloj) {
     reloj->alarma->estado ^= true;
 }
 
-void ClockPosponerAlarma(clock_t reloj, uint8_t time_post) {
-    memcpy(reloj->alarma->time_pos, reloj->alarma->time, TIME_SIZE);
-    reloj->alarma->postergada = true;
-    reloj->alarma->time[UNIDAD_MIN] += time_post;
-    CONTROLAR_REBALSE_MIN(reloj->alarma->time[DECENA_MIN], reloj->alarma->time[UNIDAD_MIN],
-                          reloj->alarma->time[UNIDAD_HOR]);
-    CONTROLAR_REBALSE_HOR(reloj->alarma->time[DECENA_HOR], reloj->alarma->time[UNIDAD_HOR]);
-}
 void ClockCancelarAlarma(clock_t reloj) {
+    reloj->alarma->apagar();
     if (reloj->alarma->postergada) {
         memcpy(reloj->alarma->time, reloj->alarma->time_pos, TIME_SIZE);
         reloj->alarma->postergada = false;
     }
 }
 
+void ClockPosponerAlarma(clock_t reloj, uint8_t time_post) {
+    if ((reloj->alarma->postergada) == false) {
+        reloj->alarma->apagar();
+        memcpy(reloj->alarma->time_pos, reloj->alarma->time, TIME_SIZE);
+        reloj->alarma->postergada = true;
+        reloj->alarma->time[UNIDAD_MIN] += time_post;
+        CONTROLAR_REBALSE_MIN(reloj->alarma->time[DECENA_MIN], reloj->alarma->time[UNIDAD_MIN],
+                              reloj->alarma->time[UNIDAD_HOR]);
+        CONTROLAR_REBALSE_HOR(reloj->alarma->time[DECENA_HOR], reloj->alarma->time[UNIDAD_HOR]);
+    } else {
+        ClockCancelarAlarma(reloj);
+    }
+}
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
