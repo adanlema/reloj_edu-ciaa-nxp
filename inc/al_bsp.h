@@ -40,17 +40,13 @@ board_t board_Create(void);
  * @param ticks interrupciones por segundo.
  */
 void SysTickConfig(uint32_t ticks);
-/**
- * @brief Enciende la Alarma
- * Se encarga de encender la alarma, haciendo sonar el buzzer.
- */
-void AlarmaOn(void);
-/**
- * @brief Apaga la Alarma
- * Se encarga de apagar la alarma, apagando el buzzer.
- */
-void AlarmaOff(void);
 
+/**
+ * @brief Cambiar el estado de la Alarma
+ * Se encarga de encender o apagar la alarma.
+ * @param estado *true* si se quiere activar, *false* si se quiere apagar.
+ */
+void AlarmaToggle(bool estado);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

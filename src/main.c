@@ -26,7 +26,7 @@ static uint8_t hora_actual[TIME_SIZE];
 
 int main(void) {
     board_educia = board_Create();
-    reloj        = ClockCreate(5, AlarmaOn, AlarmaOff);
+    reloj        = ClockCreate(5, AlarmaToggle);
 
     SysTickConfig(1000);
     ClockSetTime(reloj, (uint8_t[]){0, 8, 3, 0, 0, 0}, 6);

@@ -14,12 +14,11 @@
 #define DECENA_HOR  0
 
 struct alarma_s {
-    uint8_t   time[TIME_SIZE];
-    uint8_t   time_pos[TIME_SIZE];
-    bool      estado;
-    bool      postergada;
-    evento_pt encender;
-    evento_pt apagar;
+    uint8_t  time[TIME_SIZE];
+    uint8_t  time_pos[TIME_SIZE];
+    bool     estado;
+    bool     postergada;
+    evento_t toggle;
 };
 
 struct clock_s {
@@ -64,14 +63,13 @@ static void ClockIncrement(clock_t reloj, uint8_t indice, uint8_t valor) {
 }
 
 /*==================[external functions definition]==========================*/
-clock_t ClockCreate(int tics_por_seg, evento_pt encender, evento_pt apagar) {
+clock_t ClockCreate(int tics_por_seg, evento_t toggleAlarma) {
     memset(self, 0, sizeof(self));
     memset(al_reloj, 0, sizeof(al_reloj));
 
-    self->ticks_por_seg    = tics_por_seg;
-    self->alarma           = al_reloj;
-    self->alarma->encender = encender;
-    self->alarma->apagar   = apagar;
+    self->ticks_por_seg  = tics_por_seg;
+    self->alarma         = al_reloj;
+    self->alarma->toggle = toggleAlarma;
     return self;
 }
 bool ClockGetTime(clock_t reloj, uint8_t * hora, int size) {
@@ -97,7 +95,7 @@ void ClockTick(clock_t reloj) {
 
     if (reloj->alarma->estado) {
         if ((memcmp(reloj->alarma->time, reloj->time, TIME_SIZE)) == 0) {
-            reloj->alarma->encender();
+            reloj->alarma->toggle(true);
         }
     }
 }
@@ -123,7 +121,7 @@ void ClockToggleAlarma(clock_t reloj) {
 }
 
 void ClockCancelarAlarma(clock_t reloj) {
-    reloj->alarma->apagar();
+    reloj->alarma->toggle(false);
     if (reloj->alarma->postergada) {
         memcpy(reloj->alarma->time, reloj->alarma->time_pos, TIME_SIZE);
         reloj->alarma->postergada = false;
@@ -132,7 +130,7 @@ void ClockCancelarAlarma(clock_t reloj) {
 
 void ClockPosponerAlarma(clock_t reloj, uint8_t time_post) {
     if ((reloj->alarma->postergada) == false) {
-        reloj->alarma->apagar();
+        reloj->alarma->toggle(false);
         memcpy(reloj->alarma->time_pos, reloj->alarma->time, TIME_SIZE);
         reloj->alarma->postergada = true;
         reloj->alarma->time[UNIDAD_MIN] += time_post;

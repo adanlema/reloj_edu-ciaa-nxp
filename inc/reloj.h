@@ -32,11 +32,11 @@
 /*==================[typedef]================================================*/
 typedef struct clock_s *  clock_t;
 typedef struct alarma_s * alarma_pt;
-typedef void (*evento_pt)(void);
+typedef void (*evento_t)(bool);
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
-clock_t ClockCreate(int tics_por_seg, evento_pt encender, evento_pt apagar);
+clock_t ClockCreate(int tics_por_seg, evento_t toggleAlarma);
 void    ClockTick(clock_t reloj);
 
 bool    ClockGetTime(clock_t reloj, uint8_t * hora, int size);
