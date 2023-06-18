@@ -6,8 +6,17 @@
 #include <stdint.h>
 #include "al_bsp.h"
 /*==================[macros]=================================================*/
-#define TIME_SIZE 6
-#define TIME_POST 5
+#define TIME_SIZE   6
+#define TIME_POST   5
+#define DECENA_TIME 6
+#define UNIDAD_TIME 10
+
+#define UNIDAD_SEG  5
+#define DECENA_SEG  4
+#define UNIDAD_MIN  3
+#define DECENA_MIN  2
+#define UNIDAD_HOR  1
+#define DECENA_HOR  0
 
 #define CONTROLAR_REBALSE_MIN(DECENA, UNIDAD, SIGUIENTE)                                           \
     if (UNIDAD > 9) {                                                                              \

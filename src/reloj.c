@@ -3,16 +3,6 @@
 #include "reloj.h"
 /*==================[macros and definitions]=================================*/
 
-#define DECENA_TIME 6
-#define UNIDAD_TIME 10
-
-#define UNIDAD_SEG  5
-#define DECENA_SEG  4
-#define UNIDAD_MIN  3
-#define DECENA_MIN  2
-#define UNIDAD_HOR  1
-#define DECENA_HOR  0
-
 struct alarma_s {
     uint8_t  time[TIME_SIZE];
     uint8_t  time_pos[TIME_SIZE];
@@ -99,11 +89,11 @@ bool ClockTick(clock_t reloj) {
             reloj->alarma->toggle(true);
         }
     }
-    if (reloj->ticks > (reloj->ticks_por_seg / 2))
+    if (reloj->ticks > (reloj->ticks_por_seg / 2)) {
         estado = true;
-    else
+    } else {
         estado = false;
-
+    }
     return estado;
 }
 
