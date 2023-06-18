@@ -83,7 +83,8 @@ bool ClockSetTime(clock_t reloj, const uint8_t * hora, int size) {
     return true;
 }
 
-void ClockTick(clock_t reloj) {
+bool ClockTick(clock_t reloj) {
+    bool estado;
     reloj->ticks++;
     ClockIncrement_seg(reloj);
     ClockIncrement(reloj, UNIDAD_SEG, UNIDAD_TIME); // INCREMENTAR_DECENAS_SEG
@@ -98,6 +99,12 @@ void ClockTick(clock_t reloj) {
             reloj->alarma->toggle(true);
         }
     }
+    if (reloj->ticks > (reloj->ticks_por_seg / 2))
+        estado = true;
+    else
+        estado = false;
+
+    return estado;
 }
 
 void ClockSetAlarma(clock_t reloj, const uint8_t * hora, int size) {
