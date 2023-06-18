@@ -157,11 +157,13 @@ board_t board_Create(void) {
 }
 
 void SysTickConfig(uint32_t ticks) {
+    __disable_irq();
+
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock / ticks);
-
-    __disable_irq();
+    NVIC_SetPriority(SysTick_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
     NVIC_EnableIRQ(SysTick_IRQn);
+
     __enable_irq();
 }
 

@@ -19,6 +19,10 @@
 struct display_s {
     uint8_t                 digitos;
     uint8_t                 digito_activo;
+    uint8_t                 parpadeo_desde;
+    uint8_t                 parpadeo_hasta;
+    uint16_t                parpadeo_contador;
+    uint16_t                parpadeo_frecuencia;
     uint8_t                 memoria[CANTIDAD_DIGITOS_MAXIMA];
     struct display_driver_s driver[1];
 };
@@ -55,8 +59,12 @@ static void DisplayBorrarMemoria(display_t display_dato) {
 display_t DisplayCreate(uint8_t digitos, display_driver_t driver_dato) {
     display_t display = DisplayReservar();
     if (display) {
-        display->digitos       = digitos;
-        display->digito_activo = digitos - 1;
+        display->digitos             = digitos;
+        display->digito_activo       = digitos - 1;
+        display->parpadeo_contador   = 0;
+        display->parpadeo_desde      = 0;
+        display->parpadeo_hasta      = 0;
+        display->parpadeo_frecuencia = 0;
         memcpy(display->driver, driver_dato, sizeof(display->driver));
         DisplayBorrarMemoria(display);
         display->driver->DisplayApagar();
@@ -74,12 +82,38 @@ void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size) {
 }
 
 void DisplayRefresh(display_t display) {
+    uint8_t segmentos;
+
     display->driver->DisplayApagar();
     display->digito_activo = (display->digito_activo + 1) % display->digitos;
-    display->driver->DisplayEncenderSegmento(display->memoria[display->digito_activo]);
+    segmentos              = display->memoria[display->digito_activo];
+
+    if (display->parpadeo_frecuencia) {
+        if (display->digito_activo == 0) {
+            display->parpadeo_contador =
+                (display->parpadeo_contador + 1) % display->parpadeo_frecuencia;
+        }
+        if ((display->digito_activo >= display->parpadeo_desde) &&
+            (display->digito_activo <= display->parpadeo_hasta)) {
+            if (display->parpadeo_contador > (display->parpadeo_frecuencia / 2)) {
+                segmentos = 0;
+            }
+        }
+    }
+
+    display->driver->DisplayEncenderSegmento(segmentos);
     display->driver->DisplayEncenderDigito(display->digito_activo);
 }
 
+void DisplayParpadeoDigitos(display_t display, uint8_t desde, uint8_t hasta, uint16_t frecuencia) {
+    display->parpadeo_contador   = 0;
+    display->parpadeo_frecuencia = frecuencia;
+    display->parpadeo_desde      = desde;
+    display->parpadeo_hasta      = hasta;
+}
+void DisplayTogglePunto(display_t display, uint8_t posicion) {
+    display->memoria[posicion] ^= (1 << 7);
+}
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

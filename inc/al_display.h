@@ -65,6 +65,8 @@ void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size);
  */
 void DisplayRefresh(display_t display);
 
+void DisplayParpadeoDigitos(display_t display, uint8_t desde, uint8_t hasta, uint16_t frecuencia);
+void DisplayTogglePunto(display_t display, uint8_t posicion);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
