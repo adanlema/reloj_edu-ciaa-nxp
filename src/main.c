@@ -46,17 +46,11 @@ void CambiarModo(modo_t estado) {
             break;
         case AJUSTAR_MINUTOS_ALARMA:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
-            DisplayTogglePunto(board_educia->display, 0);
-            DisplayTogglePunto(board_educia->display, 1);
-            DisplayTogglePunto(board_educia->display, 2);
-            DisplayTogglePunto(board_educia->display, 3);
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){1, 1, 1, 1});
             break;
         case AJUSTAR_HORAS_ALARMA:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 200);
-            DisplayTogglePunto(board_educia->display, 0);
-            DisplayTogglePunto(board_educia->display, 1);
-            DisplayTogglePunto(board_educia->display, 2);
-            DisplayTogglePunto(board_educia->display, 3);
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){1, 1, 1, 1});
             break;
         default:
             break;
@@ -148,23 +142,23 @@ int main(void) {
 }
 
 void SysTick_Handler(void) {
-    static bool valor_anterior = false;
-    bool        valor_actual;
-    uint8_t     hora[TIME_SIZE];
+    static uint16_t contador = 0;
+    uint8_t         hora[TIME_SIZE];
 
     DisplayRefresh(board_educia->display);
-    valor_actual = ClockTick(reloj);
+    ClockTick(reloj);
+    contador = (contador + 1) % 1000;
 
-    if (valor_actual != valor_anterior) {
-        valor_anterior = valor_actual;
-        if (modo <= MOSTRANDO_HORA) {
-            ClockGetTime(reloj, hora, 4);
-            DisplayWriteBCD(board_educia->display, hora, 4);
-            if (valor_actual) {
-                DisplayTogglePunto(board_educia->display, 1);
-            }
+    if (modo <= MOSTRANDO_HORA) {
+        ClockGetTime(reloj, hora, 4);
+        DisplayWriteBCD(board_educia->display, hora, 4);
+        if (contador > 500) {
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0});
         }
-    };
+        if (ClockGetAlarmaHabilitada(reloj)) {
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 0, 0, 1});
+        }
+    }
 }
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

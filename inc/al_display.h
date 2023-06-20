@@ -81,6 +81,8 @@ void DisplayTogglePunto(display_t display, uint8_t posicion);
  * @param frecuencia Frecuencia de parpadeo
  */
 void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia);
+
+void DisplayParpadeoPuntos(display_t display, uint8_t * number);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
