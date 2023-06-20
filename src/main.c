@@ -52,7 +52,7 @@ void CambiarModo(modo_t estado) {
             DisplayTogglePunto(board_educia->display, 3);
             break;
         case AJUSTAR_HORAS_ALARMA:
-            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 0);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 200);
             DisplayTogglePunto(board_educia->display, 0);
             DisplayTogglePunto(board_educia->display, 1);
             DisplayTogglePunto(board_educia->display, 2);
@@ -72,18 +72,36 @@ int main(void) {
     while (true) {
 
         if (DigitalInput_HasActivate(board_educia->aceptar)) {
-            if (modo == AJUSTAR_MINUTOS_ACTUAL) {
+            if (modo == MOSTRANDO_HORA) {
+                if (!ClockGetAlarmaHabilitada(reloj)) {
+                    ClockToggleAlarma(reloj);
+                }
+            } else if (modo == AJUSTAR_MINUTOS_ACTUAL) {
                 CambiarModo(AJUSTAR_HORAS_ACTUAL);
             } else if (modo == AJUSTAR_HORAS_ACTUAL) {
                 ClockSetTime(reloj, hora_actual, sizeof(hora_actual));
                 CambiarModo(MOSTRANDO_HORA);
+            } else if (modo == AJUSTAR_MINUTOS_ALARMA) {
+                CambiarModo(AJUSTAR_HORAS_ALARMA);
+            } else if (modo == AJUSTAR_HORAS_ALARMA) {
+                ClockSetAlarma(reloj, hora_actual, sizeof(hora_actual));
+                CambiarModo(MOSTRANDO_HORA);
             }
         }
+
         if (DigitalInput_HasActivate(board_educia->rechazar)) {
-            if (ClockGetTime(reloj, hora_actual, sizeof(hora_actual))) {
-                CambiarModo(MOSTRANDO_HORA);
+            if (modo == MOSTRANDO_HORA) {
+                if (DigitalOutput_GetState(board_educia->buz)) {
+                    ClockCancelarAlarma(reloj);
+                } else if (ClockGetAlarmaHabilitada(reloj)) {
+                    ClockToggleAlarma(reloj);
+                }
             } else {
-                CambiarModo(SIN_CONFIGURAR);
+                if (ClockGetTime(reloj, hora_actual, sizeof(hora_actual))) {
+                    CambiarModo(MOSTRANDO_HORA);
+                } else {
+                    CambiarModo(SIN_CONFIGURAR);
+                }
             }
         }
 
@@ -92,23 +110,39 @@ int main(void) {
             ClockGetTime(reloj, hora_actual, sizeof(hora_actual));
             DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
         }
+
         if (DigitalInput_HasActivate(board_educia->f2)) {
+            CambiarModo(AJUSTAR_MINUTOS_ALARMA);
+            ClockGetAlarma(reloj, hora_actual, sizeof(hora_actual));
+            DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
         }
+
         if (DigitalInput_HasActivate(board_educia->f3)) {
-            if (modo == AJUSTAR_MINUTOS_ACTUAL) {
+            if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_MINUTOS_ALARMA)) {
                 DecrementarBCD(&hora_actual[2], LIMITE_MINUTOS);
-            } else if (modo == AJUSTAR_HORAS_ACTUAL) {
+            } else if ((modo == AJUSTAR_HORAS_ACTUAL) || (modo == AJUSTAR_HORAS_ALARMA)) {
                 DecrementarBCD(&hora_actual[0], LIMITE_HORAS);
             }
-            DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+            if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_HORAS_ACTUAL)) {
+                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+            } else if (((modo == AJUSTAR_MINUTOS_ALARMA) || (modo == AJUSTAR_HORAS_ALARMA))) {
+                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+                // Debo agregar una funcion que haga parpadear los puntos del display.
+            }
         }
+
         if (DigitalInput_HasActivate(board_educia->f4)) {
-            if (modo == AJUSTAR_MINUTOS_ACTUAL) {
+            if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_MINUTOS_ALARMA)) {
                 IncrementarBCD(&hora_actual[2], LIMITE_MINUTOS);
-            } else if (modo == AJUSTAR_HORAS_ACTUAL) {
+            } else if ((modo == AJUSTAR_HORAS_ACTUAL) || (modo == AJUSTAR_HORAS_ALARMA)) {
                 IncrementarBCD(&hora_actual[0], LIMITE_HORAS);
             }
-            DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+            if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_HORAS_ACTUAL)) {
+                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+            } else if (((modo == AJUSTAR_MINUTOS_ALARMA) || (modo == AJUSTAR_HORAS_ALARMA))) {
+                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+                // Debo agregar una funcion que haga parpadear los puntos del display.
+            }
         }
     }
 }
