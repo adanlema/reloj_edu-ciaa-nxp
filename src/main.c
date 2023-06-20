@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include "al_gpio.h"
+#include "al_bcd.h"
 #include "al_bsp.h"
 #include "al_display.h"
 #include "reloj.h"
@@ -21,42 +22,11 @@ static clock_t       reloj;
 static modo_t        modo;
 static uint8_t       hora_actual[TIME_SIZE];
 
-static const uint8_t LIMITE_MINUTOS[] = {6, 0};
-static const uint8_t LIMITE_HORAS[]   = {2, 4};
+static const uint8_t LIMITE_MINUTOS[] = {5, 9};
+static const uint8_t LIMITE_HORAS[]   = {2, 3};
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
-void IncrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
-    numero[1]++;
-    if (numero[1] > 9) {
-        numero[1] = 0;
-        numero[0]++;
-    }
-    if ((numero[0] >= limite[0]) && (numero[1] >= limite[1])) {
-        numero[1] = 0;
-        numero[0] = 0;
-    }
-}
-void DecrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
-
-    if ((numero[0] == 0) && (numero[1] == 0)) {
-        if (limite[0] == 6) {
-            numero[0] = limite[0] - 1;
-        } else {
-            numero[0] = limite[0];
-        }
-        if (limite[1] == 0) {
-            numero[1] = 9;
-        } else {
-            numero[1] = limite[1] - 1;
-        }
-    } else if (numero[1] == 0) {
-        numero[1] = 9;
-        numero[0]--;
-    } else {
-        numero[1]--;
-    }
-}
 
 /*==================[external functions definition]==========================*/
 void CambiarModo(modo_t estado) {
