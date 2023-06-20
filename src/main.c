@@ -32,20 +32,29 @@ void IncrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
         numero[1] = 0;
         numero[0]++;
     }
-    if ((numero[0] == limite[0]) && (numero[1] > limite[1])) {
+    if ((numero[0] >= limite[0]) && (numero[1] >= limite[1])) {
         numero[1] = 0;
         numero[0] = 0;
     }
 }
 void DecrementarBCD(uint8_t numero[2], const uint8_t limite[2]) {
-    numero[1]--;
-    if (numero[1] > 9) {
-        numero[1] = 0;
+
+    if ((numero[0] == 0) && (numero[1] == 0)) {
+        if (limite[0] == 6) {
+            numero[0] = limite[0] - 1;
+        } else {
+            numero[0] = limite[0];
+        }
+        if (limite[1] == 0) {
+            numero[1] = 9;
+        } else {
+            numero[1] = limite[1] - 1;
+        }
+    } else if (numero[1] == 0) {
+        numero[1] = 9;
         numero[0]--;
-    }
-    if ((numero[0] >= limite[0]) && (numero[1] > limite[1])) {
-        numero[1] = 0;
-        numero[0] = 0;
+    } else {
+        numero[1]--;
     }
 }
 
@@ -119,7 +128,7 @@ int main(void) {
             if (modo == AJUSTAR_MINUTOS_ACTUAL) {
                 DecrementarBCD(&hora_actual[2], LIMITE_MINUTOS);
             } else if (modo == AJUSTAR_HORAS_ACTUAL) {
-                DecrementarBCD(&hora_actual, LIMITE_HORAS);
+                DecrementarBCD(&hora_actual[0], LIMITE_HORAS);
             }
             DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
         }
@@ -127,7 +136,7 @@ int main(void) {
             if (modo == AJUSTAR_MINUTOS_ACTUAL) {
                 IncrementarBCD(&hora_actual[2], LIMITE_MINUTOS);
             } else if (modo == AJUSTAR_HORAS_ACTUAL) {
-                IncrementarBCD(&hora_actual, LIMITE_HORAS);
+                IncrementarBCD(&hora_actual[0], LIMITE_HORAS);
             }
             DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
         }
