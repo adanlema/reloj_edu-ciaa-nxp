@@ -19,11 +19,13 @@
 struct display_s {
     uint8_t                 digitos;
     uint8_t                 digito_activo;
+    uint8_t                 memoria[CANTIDAD_DIGITOS_MAXIMA];
     uint8_t                 parpadeo[4];
     uint8_t                 parpadeo_puntos[4];
-    uint8_t                 memoria[CANTIDAD_DIGITOS_MAXIMA];
     uint16_t                parpadeo_contador;
     uint16_t                parpadeo_frecuencia;
+    uint16_t                parpadeo_puntos_contador;
+    uint16_t                parpadeo_puntos_frecuencia;
     struct display_driver_s driver[1];
 };
 
@@ -101,12 +103,23 @@ void DisplayRefresh(display_t display) {
             display->parpadeo_contador =
                 (display->parpadeo_contador + 1) % display->parpadeo_frecuencia;
         }
-        if (display->parpadeo_puntos[display->digito_activo] == 1) {
-            segmentos += (1 << 7);
-        }
         if (display->parpadeo[display->digito_activo] == 1) {
             if (display->parpadeo_contador > (display->parpadeo_frecuencia / 2)) {
                 segmentos = 0;
+            }
+        }
+    }
+
+    if (display->parpadeo_puntos_frecuencia) {
+        if (display->digito_activo == 0) {
+            display->parpadeo_puntos_contador =
+                (display->parpadeo_puntos_contador + 1) % display->parpadeo_puntos_frecuencia;
+        }
+        if (display->parpadeo_puntos[display->digito_activo] == 1) {
+            if (display->parpadeo_puntos_contador > (display->parpadeo_puntos_frecuencia / 2)) {
+                segmentos &= ~(1 << 7);
+            } else {
+                segmentos += (1 << 7);
             }
         }
     }
@@ -120,7 +133,9 @@ void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t fre
     display->parpadeo_frecuencia = frecuencia;
     memcpy(display->parpadeo, number, sizeof(display->parpadeo));
 }
-void DisplayParpadeoPuntos(display_t display, uint8_t * number) {
+void DisplayParpadeoPuntos(display_t display, uint8_t * number, uint16_t frecuencia) {
+    display->parpadeo_puntos_contador   = 0;
+    display->parpadeo_puntos_frecuencia = frecuencia;
     memcpy(display->parpadeo_puntos, number, sizeof(display->parpadeo_puntos));
 }
 void DisplayTogglePunto(display_t display, uint8_t posicion) {

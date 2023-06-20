@@ -36,7 +36,8 @@ void CambiarModo(modo_t estado) {
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 1, 1}, 200);
             break;
         case MOSTRANDO_HORA:
-            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 0, 0}, 0);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 0, 0}, 200);
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0}, 200);
             break;
         case AJUSTAR_MINUTOS_ACTUAL:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
@@ -46,11 +47,11 @@ void CambiarModo(modo_t estado) {
             break;
         case AJUSTAR_MINUTOS_ALARMA:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
-            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){1, 1, 1, 1});
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
             break;
         case AJUSTAR_HORAS_ALARMA:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 200);
-            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){1, 1, 1, 1});
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 200);
             break;
         default:
             break;
@@ -121,7 +122,6 @@ int main(void) {
                 DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
             } else if (((modo == AJUSTAR_MINUTOS_ALARMA) || (modo == AJUSTAR_HORAS_ALARMA))) {
                 DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
-                // Debo agregar una funcion que haga parpadear los puntos del display.
             }
         }
 
@@ -135,29 +135,28 @@ int main(void) {
                 DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
             } else if (((modo == AJUSTAR_MINUTOS_ALARMA) || (modo == AJUSTAR_HORAS_ALARMA))) {
                 DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
-                // Debo agregar una funcion que haga parpadear los puntos del display.
             }
         }
     }
 }
 
 void SysTick_Handler(void) {
-    static uint16_t contador = 0;
-    uint8_t         hora[TIME_SIZE];
+    // static uint16_t contador = 0;
+    uint8_t hora[TIME_SIZE];
 
     DisplayRefresh(board_educia->display);
     ClockTick(reloj);
-    contador = (contador + 1) % 1000;
+    // contador = (contador + 1) % 1000;
 
     if (modo <= MOSTRANDO_HORA) {
         ClockGetTime(reloj, hora, 4);
         DisplayWriteBCD(board_educia->display, hora, 4);
-        if (contador > 500) {
-            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0});
-        }
-        if (ClockGetAlarmaHabilitada(reloj)) {
-            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 0, 0, 1});
-        }
+        // if (contador > 500) {
+        //     DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0});
+        // }
+        // if (ClockGetAlarmaHabilitada(reloj)) {
+        //     DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 0, 0, 1});
+        // }
     }
 }
 /** @ doxygen end group definition */

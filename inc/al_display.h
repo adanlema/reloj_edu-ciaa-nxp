@@ -82,7 +82,7 @@ void DisplayTogglePunto(display_t display, uint8_t posicion);
  */
 void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia);
 
-void DisplayParpadeoPuntos(display_t display, uint8_t * number);
+void DisplayParpadeoPuntos(display_t display, uint8_t * number, uint16_t frecuencia);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
