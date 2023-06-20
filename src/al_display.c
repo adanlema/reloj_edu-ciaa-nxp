@@ -19,11 +19,10 @@
 struct display_s {
     uint8_t                 digitos;
     uint8_t                 digito_activo;
-    uint8_t                 parpadeo_desde;
-    uint8_t                 parpadeo_hasta;
+    uint8_t                 parpadeo[4];
+    uint8_t                 memoria[CANTIDAD_DIGITOS_MAXIMA];
     uint16_t                parpadeo_contador;
     uint16_t                parpadeo_frecuencia;
-    uint8_t                 memoria[CANTIDAD_DIGITOS_MAXIMA];
     struct display_driver_s driver[1];
 };
 
@@ -42,6 +41,7 @@ static const uint8_t IMAGENES[] = {
 /*==================[internal functions declaration]=========================*/
 static display_t DisplayReservar(void);
 static void      DisplayBorrarMemoria(display_t display_dato);
+static void      DisplayBorrarParpadeo(display_t display_dato);
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
@@ -54,16 +54,18 @@ static display_t DisplayReservar(void) {
 static void DisplayBorrarMemoria(display_t display_dato) {
     memset(display_dato->memoria, 0, sizeof(display_dato->memoria));
 }
+static void DisplayBorrarParpadeo(display_t display_dato) {
+    memset(display_dato->parpadeo, 0, sizeof(display_dato->parpadeo));
+}
 /*==================[external functions definition]==========================*/
 
 display_t DisplayCreate(uint8_t digitos, display_driver_t driver_dato) {
     display_t display = DisplayReservar();
     if (display) {
-        display->digitos             = digitos;
-        display->digito_activo       = digitos - 1;
-        display->parpadeo_contador   = 0;
-        display->parpadeo_desde      = 0;
-        display->parpadeo_hasta      = 0;
+        display->digitos           = digitos;
+        display->digito_activo     = digitos - 1;
+        display->parpadeo_contador = 0;
+        DisplayBorrarParpadeo(display);
         display->parpadeo_frecuencia = 0;
         memcpy(display->driver, driver_dato, sizeof(display->driver));
         DisplayBorrarMemoria(display);
@@ -93,8 +95,7 @@ void DisplayRefresh(display_t display) {
             display->parpadeo_contador =
                 (display->parpadeo_contador + 1) % display->parpadeo_frecuencia;
         }
-        if ((display->digito_activo >= display->parpadeo_desde) &&
-            (display->digito_activo <= display->parpadeo_hasta)) {
+        if (display->parpadeo[display->digito_activo] == 1) {
             if (display->parpadeo_contador > (display->parpadeo_frecuencia / 2)) {
                 segmentos = 0;
             }
@@ -105,12 +106,12 @@ void DisplayRefresh(display_t display) {
     display->driver->DisplayEncenderDigito(display->digito_activo);
 }
 
-void DisplayParpadeoDigitos(display_t display, uint8_t desde, uint8_t hasta, uint16_t frecuencia) {
+void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia) {
     display->parpadeo_contador   = 0;
     display->parpadeo_frecuencia = frecuencia;
-    display->parpadeo_desde      = desde;
-    display->parpadeo_hasta      = hasta;
+    memcpy(display->parpadeo, number, sizeof(display->parpadeo));
 }
+
 void DisplayTogglePunto(display_t display, uint8_t posicion) {
     display->memoria[posicion] ^= (1 << 7);
 }

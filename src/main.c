@@ -33,26 +33,26 @@ void CambiarModo(modo_t estado) {
     modo = estado;
     switch (modo) {
         case SIN_CONFIGURAR:
-            DisplayParpadeoDigitos(board_educia->display, 0, 3, 200);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 1, 1}, 200);
             break;
         case MOSTRANDO_HORA:
-            DisplayParpadeoDigitos(board_educia->display, 0, 0, 0);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 0, 0}, 0);
             break;
         case AJUSTAR_MINUTOS_ACTUAL:
-            DisplayParpadeoDigitos(board_educia->display, 2, 3, 200);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
             break;
         case AJUSTAR_HORAS_ACTUAL:
-            DisplayParpadeoDigitos(board_educia->display, 0, 1, 200);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 200);
             break;
         case AJUSTAR_MINUTOS_ALARMA:
-            DisplayParpadeoDigitos(board_educia->display, 2, 3, 200);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
             DisplayTogglePunto(board_educia->display, 0);
             DisplayTogglePunto(board_educia->display, 1);
             DisplayTogglePunto(board_educia->display, 2);
             DisplayTogglePunto(board_educia->display, 3);
             break;
         case AJUSTAR_HORAS_ALARMA:
-            DisplayParpadeoDigitos(board_educia->display, 0, 1, 200);
+            DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 0, 0}, 0);
             DisplayTogglePunto(board_educia->display, 0);
             DisplayTogglePunto(board_educia->display, 1);
             DisplayTogglePunto(board_educia->display, 2);

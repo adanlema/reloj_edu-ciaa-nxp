@@ -64,9 +64,23 @@ void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size);
  * @param display Puntero al display.
  */
 void DisplayRefresh(display_t display);
-
-void DisplayParpadeoDigitos(display_t display, uint8_t desde, uint8_t hasta, uint16_t frecuencia);
+/**
+ * @brief Funcion para cambiar el estado de un punto
+ * Es una funcion para cambiar el estado de un puntero de un segmento especifico.
+ * @param display Puntero al display.
+ * @param posicion Posicion del punto que se quiere encender.
+ */
 void DisplayTogglePunto(display_t display, uint8_t posicion);
+/**
+ * @brief Parpadeo de los Digitos
+ * Es una funcion que se encarga del parpadeo de los digitos del display. Se le debe pasar un vector
+ * indicando que puntos se quiere encender y la frecuencia que tendra el parpadeo deseado. Se debe
+ * colocar un 1 si se desea parpadear ese segmento, y un 0 en el caso contrario.
+ * @param display Puntero al display
+ * @param number Vector con los digitos a parpadear
+ * @param frecuencia Frecuencia de parpadeo
+ */
+void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
