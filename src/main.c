@@ -12,7 +12,7 @@
 
 /*==================[macros and definitions]=================================*/
 #define INT_POR_SEG   1000
-#define TICKS_POR_SEG 1000
+#define TICKS_POR_SEG 100
 #define ESPERA_SEG    3000
 /*==================[internal data declaration]==============================*/
 
@@ -23,7 +23,7 @@ static board_t       board_educia;
 static clock_t       reloj;
 static modo_t        modo;
 static uint8_t       hora_auxiliar[TIME_SIZE];
-static uint16_t      contador_pulsos[2] = {0};
+static uint16_t      contador_pulsos[3] = {0};
 
 static const uint8_t LIMITE_MINUTOS[]   = {5, 9};
 static const uint8_t LIMITE_HORAS[]     = {2, 3};
@@ -73,7 +73,9 @@ int main(void) {
 
         if (DigitalInput_HasActivate(board_educia->aceptar)) {
             if (modo == MOSTRANDO_HORA) {
-                if (!ClockGetAlarmaHabilitada(reloj)) {
+                if (DigitalOutput_GetState(board_educia->buz)) {
+                    ClockPosponerAlarma(reloj, TIME_POST);
+                } else if (!ClockGetAlarmaHabilitada(reloj)) {
                     ClockToggleAlarma(reloj);
                     DisplayPuntoAlarma(board_educia->display, true);
                 }
@@ -98,6 +100,7 @@ int main(void) {
                 } else if (ClockGetAlarmaHabilitada(reloj)) {
                     ClockToggleAlarma(reloj);
                     DisplayPuntoAlarma(board_educia->display, false);
+                    ClockCancelarAlarma(reloj);
                 }
             } else {
                 if (ClockGetTime(reloj, hora_auxiliar, sizeof(hora_auxiliar))) {
@@ -113,6 +116,7 @@ int main(void) {
         }
         if (contador_pulsos[0] > 3000) {
             contador_pulsos[0] = 0;
+            contador_pulsos[3]++;
             CambiarModo(AJUSTAR_MINUTOS_ACTUAL);
             ClockGetTime(reloj, hora_auxiliar, sizeof(hora_auxiliar));
             DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
@@ -123,6 +127,7 @@ int main(void) {
         }
         if (contador_pulsos[1] > 3000) {
             contador_pulsos[1] = 0;
+            contador_pulsos[3]++;
             DisplayPuntoAlarma(board_educia->display, false);
             CambiarModo(AJUSTAR_MINUTOS_ALARMA);
             ClockGetAlarma(reloj, hora_auxiliar, sizeof(hora_auxiliar));
@@ -154,6 +159,11 @@ int main(void) {
                 DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
             }
         }
+
+        if (contador_pulsos[3] > (INT_POR_SEG * 30)) {
+            contador_pulsos[3] = 0;
+            CambiarModo(MOSTRANDO_HORA);
+        }
     }
 }
 
@@ -168,6 +178,12 @@ void SysTick_Handler(void) {
     }
     if ((DigitalInput_GetState(board_educia->f2)) && (contador_pulsos[1] > 0)) {
         contador_pulsos[1]++;
+    }
+    if (!((DigitalInput_GetState(board_educia->f2))) &&
+        !((DigitalInput_GetState(board_educia->f1))) &&
+        !((DigitalInput_GetState(board_educia->aceptar))) &&
+        !((DigitalInput_GetState(board_educia->rechazar))) && (contador_pulsos[3] > 0)) {
+        contador_pulsos[3]++;
     }
 
     if (modo <= MOSTRANDO_HORA) {
