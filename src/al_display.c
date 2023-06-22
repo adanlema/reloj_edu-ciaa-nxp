@@ -20,12 +20,8 @@ struct display_s {
     uint8_t                 digitos;
     uint8_t                 digito_activo;
     uint8_t                 memoria[CANTIDAD_DIGITOS_MAXIMA];
-    uint8_t                 parpadeo[4];
-    uint8_t                 parpadeo_puntos[4];
-    uint16_t                parpadeo_contador;
-    uint16_t                parpadeo_frecuencia;
-    uint16_t                parpadeo_puntos_contador;
-    uint16_t                parpadeo_puntos_frecuencia;
+    struct parpadeo_s       digitosp[1];
+    struct parpadeo_s       puntos[1];
     struct display_driver_s driver[1];
 };
 
@@ -59,22 +55,20 @@ static void DisplayBorrarMemoria(display_t display_dato) {
     memset(display_dato->memoria, 0, sizeof(display_dato->memoria));
 }
 static void DisplayBorrarParpadeoDigitos(display_t display_dato) {
-    memset(display_dato->parpadeo, 0, sizeof(display_dato->parpadeo));
+    memset(display_dato->digitosp, 0, sizeof(display_dato->digitosp));
 }
 static void DisplayBorrarParpadeoPuntos(display_t display_dato) {
-    memset(display_dato->parpadeo_puntos, 0, sizeof(display_dato->parpadeo_puntos));
+    memset(display_dato->puntos, 0, sizeof(display_dato->puntos));
 }
 /*==================[external functions definition]==========================*/
 
 display_t DisplayCreate(uint8_t digitos, display_driver_t driver_dato) {
     display_t display = DisplayReservar();
     if (display) {
-        display->digitos           = digitos;
-        display->digito_activo     = digitos - 1;
-        display->parpadeo_contador = 0;
+        display->digitos       = digitos;
+        display->digito_activo = digitos - 1;
         DisplayBorrarParpadeoDigitos(display);
         DisplayBorrarParpadeoPuntos(display);
-        display->parpadeo_frecuencia = 0;
         memcpy(display->driver, driver_dato, sizeof(display->driver));
         DisplayBorrarMemoria(display);
         display->driver->DisplayApagar();
@@ -98,29 +92,32 @@ void DisplayRefresh(display_t display) {
     display->digito_activo = (display->digito_activo + 1) % display->digitos;
     segmentos              = display->memoria[display->digito_activo];
 
-    if (display->parpadeo_frecuencia) {
+    if (display->digitosp->frecuencia) {
         if (display->digito_activo == 0) {
-            display->parpadeo_contador =
-                (display->parpadeo_contador + 1) % display->parpadeo_frecuencia;
+            display->digitosp->contador =
+                (display->digitosp->contador + 1) % display->digitosp->frecuencia;
         }
-        if (display->parpadeo[display->digito_activo] == 1) {
-            if (display->parpadeo_contador > (display->parpadeo_frecuencia / 2)) {
+        if (display->digitosp->parpadeo[display->digito_activo] == 1) {
+            if (display->digitosp->contador > (display->digitosp->frecuencia / 2)) {
                 segmentos = 0;
             }
         }
     }
 
-    if (display->parpadeo_puntos_frecuencia) {
+    if (display->puntos->frecuencia) {
         if (display->digito_activo == 0) {
-            display->parpadeo_puntos_contador =
-                (display->parpadeo_puntos_contador + 1) % display->parpadeo_puntos_frecuencia;
+            display->puntos->contador =
+                (display->puntos->contador + 1) % display->puntos->frecuencia;
         }
-        if (display->parpadeo_puntos[display->digito_activo] == 1) {
-            if (display->parpadeo_puntos_contador > (display->parpadeo_puntos_frecuencia / 2)) {
+        if (display->puntos->parpadeo[display->digito_activo] == 1) {
+            if (display->puntos->contador > (display->puntos->frecuencia / 2)) {
                 segmentos &= ~(1 << 7);
             } else {
                 segmentos += (1 << 7);
             }
+        }
+        if ((display->puntos->bandera) && (display->digito_activo == 3)) {
+            segmentos += (1 << 7);
         }
     }
 
@@ -129,17 +126,20 @@ void DisplayRefresh(display_t display) {
 }
 
 void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia) {
-    display->parpadeo_contador   = 0;
-    display->parpadeo_frecuencia = frecuencia;
-    memcpy(display->parpadeo, number, sizeof(display->parpadeo));
+    display->digitosp->contador   = 0;
+    display->digitosp->frecuencia = frecuencia;
+    memcpy(display->digitosp->parpadeo, number, sizeof(display->digitosp->parpadeo));
 }
 void DisplayParpadeoPuntos(display_t display, uint8_t * number, uint16_t frecuencia) {
-    display->parpadeo_puntos_contador   = 0;
-    display->parpadeo_puntos_frecuencia = frecuencia;
-    memcpy(display->parpadeo_puntos, number, sizeof(display->parpadeo_puntos));
+    display->puntos->contador   = 0;
+    display->puntos->frecuencia = frecuencia;
+    memcpy(display->puntos->parpadeo, number, sizeof(display->puntos->parpadeo));
 }
 void DisplayTogglePunto(display_t display, uint8_t posicion) {
     display->memoria[posicion] ^= (1 << 7);
+}
+void DisplayPuntoAlarma(display_t display, bool estado) {
+    display->puntos->bandera = estado;
 }
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

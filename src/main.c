@@ -11,7 +11,9 @@
 #include "al_modo.h"
 
 /*==================[macros and definitions]=================================*/
-
+#define INT_POR_SEG   1000
+#define TICKS_POR_SEG 1000
+#define ESPERA_SEG    3000
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
@@ -20,10 +22,11 @@
 static board_t       board_educia;
 static clock_t       reloj;
 static modo_t        modo;
-static uint8_t       hora_actual[TIME_SIZE];
+static uint8_t       hora_auxiliar[TIME_SIZE];
+static uint16_t      contador_pulsos[2] = {0};
 
-static const uint8_t LIMITE_MINUTOS[] = {5, 9};
-static const uint8_t LIMITE_HORAS[]   = {2, 3};
+static const uint8_t LIMITE_MINUTOS[]   = {5, 9};
+static const uint8_t LIMITE_HORAS[]     = {2, 3};
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
@@ -34,10 +37,12 @@ void CambiarModo(modo_t estado) {
     switch (modo) {
         case SIN_CONFIGURAR:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){1, 1, 1, 1}, 200);
+            DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0}, 200);
             break;
         case MOSTRANDO_HORA:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 0, 0}, 200);
             DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0}, 200);
+
             break;
         case AJUSTAR_MINUTOS_ACTUAL:
             DisplayNewParpadeoDigitos(board_educia->display, (uint8_t[]){0, 0, 1, 1}, 200);
@@ -59,9 +64,9 @@ void CambiarModo(modo_t estado) {
 }
 int main(void) {
     board_educia = board_Create();
-    reloj        = ClockCreate(10, AlarmaToggle);
+    reloj        = ClockCreate(TICKS_POR_SEG, AlarmaToggle);
 
-    SysTickConfig(1000);
+    SysTickConfig(INT_POR_SEG);
     CambiarModo(SIN_CONFIGURAR);
 
     while (true) {
@@ -70,17 +75,19 @@ int main(void) {
             if (modo == MOSTRANDO_HORA) {
                 if (!ClockGetAlarmaHabilitada(reloj)) {
                     ClockToggleAlarma(reloj);
+                    DisplayPuntoAlarma(board_educia->display, true);
                 }
             } else if (modo == AJUSTAR_MINUTOS_ACTUAL) {
                 CambiarModo(AJUSTAR_HORAS_ACTUAL);
             } else if (modo == AJUSTAR_HORAS_ACTUAL) {
-                ClockSetTime(reloj, hora_actual, sizeof(hora_actual));
+                ClockSetTime(reloj, hora_auxiliar, sizeof(hora_auxiliar));
                 CambiarModo(MOSTRANDO_HORA);
             } else if (modo == AJUSTAR_MINUTOS_ALARMA) {
                 CambiarModo(AJUSTAR_HORAS_ALARMA);
             } else if (modo == AJUSTAR_HORAS_ALARMA) {
-                ClockSetAlarma(reloj, hora_actual, sizeof(hora_actual));
+                ClockSetAlarma(reloj, hora_auxiliar, sizeof(hora_auxiliar));
                 CambiarModo(MOSTRANDO_HORA);
+                DisplayPuntoAlarma(board_educia->display, true);
             }
         }
 
@@ -90,9 +97,10 @@ int main(void) {
                     ClockCancelarAlarma(reloj);
                 } else if (ClockGetAlarmaHabilitada(reloj)) {
                     ClockToggleAlarma(reloj);
+                    DisplayPuntoAlarma(board_educia->display, false);
                 }
             } else {
-                if (ClockGetTime(reloj, hora_actual, sizeof(hora_actual))) {
+                if (ClockGetTime(reloj, hora_auxiliar, sizeof(hora_auxiliar))) {
                     CambiarModo(MOSTRANDO_HORA);
                 } else {
                     CambiarModo(SIN_CONFIGURAR);
@@ -101,62 +109,70 @@ int main(void) {
         }
 
         if (DigitalInput_HasActivate(board_educia->f1)) {
+            contador_pulsos[0]++;
+        }
+        if (contador_pulsos[0] > 3000) {
+            contador_pulsos[0] = 0;
             CambiarModo(AJUSTAR_MINUTOS_ACTUAL);
-            ClockGetTime(reloj, hora_actual, sizeof(hora_actual));
-            DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+            ClockGetTime(reloj, hora_auxiliar, sizeof(hora_auxiliar));
+            DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
         }
 
         if (DigitalInput_HasActivate(board_educia->f2)) {
+            contador_pulsos[1]++;
+        }
+        if (contador_pulsos[1] > 3000) {
+            contador_pulsos[1] = 0;
+            DisplayPuntoAlarma(board_educia->display, false);
             CambiarModo(AJUSTAR_MINUTOS_ALARMA);
-            ClockGetAlarma(reloj, hora_actual, sizeof(hora_actual));
-            DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+            ClockGetAlarma(reloj, hora_auxiliar, sizeof(hora_auxiliar));
+            DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
         }
 
         if (DigitalInput_HasActivate(board_educia->f3)) {
             if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_MINUTOS_ALARMA)) {
-                DecrementarBCD(&hora_actual[2], LIMITE_MINUTOS);
+                DecrementarBCD(&hora_auxiliar[2], LIMITE_MINUTOS);
             } else if ((modo == AJUSTAR_HORAS_ACTUAL) || (modo == AJUSTAR_HORAS_ALARMA)) {
-                DecrementarBCD(&hora_actual[0], LIMITE_HORAS);
+                DecrementarBCD(&hora_auxiliar[0], LIMITE_HORAS);
             }
             if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_HORAS_ACTUAL)) {
-                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+                DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
             } else if (((modo == AJUSTAR_MINUTOS_ALARMA) || (modo == AJUSTAR_HORAS_ALARMA))) {
-                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+                DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
             }
         }
 
         if (DigitalInput_HasActivate(board_educia->f4)) {
             if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_MINUTOS_ALARMA)) {
-                IncrementarBCD(&hora_actual[2], LIMITE_MINUTOS);
+                IncrementarBCD(&hora_auxiliar[2], LIMITE_MINUTOS);
             } else if ((modo == AJUSTAR_HORAS_ACTUAL) || (modo == AJUSTAR_HORAS_ALARMA)) {
-                IncrementarBCD(&hora_actual[0], LIMITE_HORAS);
+                IncrementarBCD(&hora_auxiliar[0], LIMITE_HORAS);
             }
             if ((modo == AJUSTAR_MINUTOS_ACTUAL) || (modo == AJUSTAR_HORAS_ACTUAL)) {
-                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+                DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
             } else if (((modo == AJUSTAR_MINUTOS_ALARMA) || (modo == AJUSTAR_HORAS_ALARMA))) {
-                DisplayWriteBCD(board_educia->display, hora_actual, sizeof(hora_actual));
+                DisplayWriteBCD(board_educia->display, hora_auxiliar, sizeof(hora_auxiliar));
             }
         }
     }
 }
 
 void SysTick_Handler(void) {
-    // static uint16_t contador = 0;
+
     uint8_t hora[TIME_SIZE];
 
     DisplayRefresh(board_educia->display);
     ClockTick(reloj);
-    // contador = (contador + 1) % 1000;
+    if ((DigitalInput_GetState(board_educia->f1)) && (contador_pulsos[0] > 0)) {
+        contador_pulsos[0]++;
+    }
+    if ((DigitalInput_GetState(board_educia->f2)) && (contador_pulsos[1] > 0)) {
+        contador_pulsos[1]++;
+    }
 
     if (modo <= MOSTRANDO_HORA) {
         ClockGetTime(reloj, hora, 4);
         DisplayWriteBCD(board_educia->display, hora, 4);
-        // if (contador > 500) {
-        //     DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 1, 0, 0});
-        // }
-        // if (ClockGetAlarmaHabilitada(reloj)) {
-        //     DisplayParpadeoPuntos(board_educia->display, (uint8_t[]){0, 0, 0, 1});
-        // }
     }
 }
 /** @ doxygen end group definition */

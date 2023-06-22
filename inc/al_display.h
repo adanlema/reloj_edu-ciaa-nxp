@@ -39,6 +39,12 @@ typedef struct display_driver_s {
     display_encender_digito_t   DisplayEncenderDigito;
 } const * const display_driver_t;
 
+typedef struct parpadeo_s {
+    uint8_t  parpadeo[4];
+    uint16_t contador;
+    uint16_t frecuencia;
+    bool     bandera;
+} * parpadeo_t;
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
@@ -83,6 +89,7 @@ void DisplayTogglePunto(display_t display, uint8_t posicion);
 void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia);
 
 void DisplayParpadeoPuntos(display_t display, uint8_t * number, uint16_t frecuencia);
+void DisplayPuntoAlarma(display_t display, bool estado);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
