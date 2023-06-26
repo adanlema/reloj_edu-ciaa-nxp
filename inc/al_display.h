@@ -87,8 +87,22 @@ void DisplayTogglePunto(display_t display, uint8_t posicion);
  * @param frecuencia Frecuencia de parpadeo
  */
 void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia);
-
+/**
+ * @brief Parpadeo de los puntos del display
+ * Es una funcion que se encarga del parpadeo de los puntos del display. Se le debe pasar un vector
+ * con los digitos que desea encender y la frecuencia que tendra el mismo. El dutty cicle viene
+ * establecido, y es de un 50%.
+ * @param display Puntero al display.
+ * @param number Vector con los puntos a parpadear.
+ * @param frecuencia Frecuencia de parpadeo.
+ */
 void DisplayParpadeoPuntos(display_t display, uint8_t * number, uint16_t frecuencia);
+/**
+ * @brief Encendido del indicador de la alarma.
+ * Es una funcion que utilizamos para indicar visualmente si la alarma esta encendido o no.
+ * @param display Puntero al display.
+ * @param estado Se envia "true" si la alarma esta encendido, "false" caso contrario.
+ */
 void DisplayPuntoAlarma(display_t display, bool estado);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
