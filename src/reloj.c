@@ -134,6 +134,9 @@ void ClockPosponerAlarma(clock_t reloj, uint8_t time_post) {
         CONTROLAR_REBALSE_MIN(reloj->alarma->time[DECENA_MIN], reloj->alarma->time[UNIDAD_MIN],
                               reloj->alarma->time[UNIDAD_HOR]);
         CONTROLAR_REBALSE_HOR(reloj->alarma->time[DECENA_HOR], reloj->alarma->time[UNIDAD_HOR]);
+        if ((memcmp(reloj->time, reloj->alarma->time, 4)) > 0) {
+            ClockCancelarAlarma(reloj);
+        }
     } else {
         ClockCancelarAlarma(reloj);
     }

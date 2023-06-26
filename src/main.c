@@ -178,17 +178,17 @@ void SysTick_Handler(void) {
 
     DisplayRefresh(board_educia->display);
     ClockTick(reloj);
-    if ((DigitalInput_GetState(board_educia->f1)) && (contador_pulsos[0] > 0)) {
+    if ((DigitalInput_GetState(board_educia->f1)) && (contador_pulsos[CONT_TIME] > 0)) {
         contador_pulsos[CONT_TIME]++;
     }
-    if ((DigitalInput_GetState(board_educia->f2)) && (contador_pulsos[1] > 0)) {
+    if ((DigitalInput_GetState(board_educia->f2)) && (contador_pulsos[CONT_ALRM] > 0)) {
         contador_pulsos[CONT_ALRM]++;
     }
     if (!((DigitalInput_GetState(board_educia->f2))) &&
         !((DigitalInput_GetState(board_educia->f1))) &&
         !((DigitalInput_GetState(board_educia->aceptar))) &&
-        !((DigitalInput_GetState(board_educia->rechazar))) && (contador_pulsos[3] > 0)) {
-        contador_pulsos[CONT_ALRM]++;
+        !((DigitalInput_GetState(board_educia->rechazar))) && (contador_pulsos[MAX_CONT] > 0)) {
+        contador_pulsos[MAX_CONT]++;
     }
 
     if (modo <= MOSTRANDO_HORA) {
