@@ -147,12 +147,13 @@ board_t board_Create(void) {
     board.f3       = DigitalInput_Create(KEY_F3_GPIO, KEY_F3_BIT, false);
     board.f4       = DigitalInput_Create(KEY_F4_GPIO, KEY_F4_BIT, false);
     /*  Salidas  */
-    board.buz     = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
-    board.display = DisplayCreate(4, &(struct display_driver_s){
-                                         .DisplayApagar           = DisplayApagar,
-                                         .DisplayEncenderSegmento = DisplayEncenderSegmento,
-                                         .DisplayEncenderDigito   = DisplayEncenderDigito,
-                                     });
+    board.buz = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
+    board.display =
+        DisplayCreate(CANTIDAD_DIGITOS, &(struct display_driver_s){
+                                            .DisplayApagar           = DisplayApagar,
+                                            .DisplayEncenderSegmento = DisplayEncenderSegmento,
+                                            .DisplayEncenderDigito   = DisplayEncenderDigito,
+                                        });
     return &board;
 }
 

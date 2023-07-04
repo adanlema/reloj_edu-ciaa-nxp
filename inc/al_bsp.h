@@ -7,7 +7,7 @@
 #include "al_gpio.h"
 #include "al_display.h"
 /*==================[macros]=================================================*/
-
+#define CANTIDAD_DIGITOS 4
 /*==================[typedef]================================================*/
 //! Estructura de la placa que utilizaremos para el reloj despertador.
 struct board_s {

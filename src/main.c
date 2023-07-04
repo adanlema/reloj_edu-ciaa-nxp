@@ -26,7 +26,7 @@
 static board_t       board_educia;
 static clock_t       reloj;
 static modo_t        modo;
-static uint8_t       hora_auxiliar[TIME_SIZE];
+static uint8_t       hora_auxiliar[CANTIDAD_DIGITOS];
 static uint16_t      contador_pulsos[3] = {0};
 
 static const uint8_t LIMITE_MINUTOS[]   = {5, 9};
