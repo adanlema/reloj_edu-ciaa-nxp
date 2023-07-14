@@ -147,7 +147,10 @@ board_t board_Create(void) {
     board.f3       = DigitalInput_Create(KEY_F3_GPIO, KEY_F3_BIT, false);
     board.f4       = DigitalInput_Create(KEY_F4_GPIO, KEY_F4_BIT, false);
     /*  Salidas  */
-    board.buz = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
+    board.led_1 = DigitalOutput_Create(LED_1_GPIO, LED_1_BIT);
+    board.led_2 = DigitalOutput_Create(LED_2_GPIO, LED_2_BIT);
+    board.led_3 = DigitalOutput_Create(LED_B_GPIO, LED_B_BIT);
+    board.buz   = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
     board.display =
         DisplayCreate(CANTIDAD_DIGITOS, &(struct display_driver_s){
                                             .DisplayApagar           = DisplayApagar,

@@ -18,6 +18,9 @@ struct board_s {
     DigitalInput_pt  aceptar;
     DigitalInput_pt  rechazar;
     DigitalOutput_pt buz;
+    DigitalOutput_pt led_1;
+    DigitalOutput_pt led_2;
+    DigitalOutput_pt led_3;
     display_t        display;
 };
 //! Creacion de un tipo de dato que es un puntero a una estructura de la placa.

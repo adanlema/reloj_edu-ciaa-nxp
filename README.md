@@ -20,3 +20,10 @@ Para utilizar este repositorio deben:
 ## License
 
 This template is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+
+
+# Recomendaciones del profe (Basicas)
+* El refresco es una tarea.
+* Manejo de la hora en otra tarea.
+* Todo el resto en otra en tarea.
+* Podemos separar el teclado pero debemos considerar que tenemos teclacas que esperan los 3 segundos y eso es mas complejo.

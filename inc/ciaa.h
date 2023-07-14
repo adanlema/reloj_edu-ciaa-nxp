@@ -140,16 +140,31 @@
 // Definiciones de los recursos asociados al zumbador
 #define LED_1_PORT 2
 #define LED_1_PIN  10
+#define LED_1_FUNC (SCU_MODE_FUNC0 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_1_GPIO 0
+#define LED_1_BIT  14
+
 #define LED_2_PORT 2
 #define LED_2_PIN  11
+#define LED_2_FUNC (SCU_MODE_FUNC0 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_2_GPIO 1
+#define LED_2_BIT  11
 
 #define LED_R_PORT 2
 #define LED_R_PIN  0
 #define LED_R_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_R_GPIO 5
+#define LED_R_BIT  0
 #define LED_G_PORT 2
 #define LED_G_PIN  1
+#define LED_G_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_G_GPIO 5
+#define LED_G_BIT  1
 #define LED_B_PORT 2
 #define LED_B_PIN  2
+#define LED_B_FUNC (SCU_MODE_FUNC4 | SCU_MODE_INBUFF_EN | SCU_MODE_INACT)
+#define LED_B_GPIO 5
+#define LED_B_BIT  2
 
 #define LED_3_PORT 2
 #define LED_3_PIN  12
