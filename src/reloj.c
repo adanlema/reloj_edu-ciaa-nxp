@@ -22,7 +22,7 @@ struct clock_s {
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
-static void ClockIncrement_seg(clock_t reloj);
+static bool ClockIncrement_seg(clock_t reloj);
 static void ClockIncrement_day(clock_t reloj);
 static void ClockIncrement(clock_t reloj, uint8_t indice, uint8_t valor);
 /*==================[internal data definition]===============================*/
@@ -31,11 +31,14 @@ static struct alarma_s al_reloj[1];
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
-static void ClockIncrement_seg(clock_t reloj) {
+static bool ClockIncrement_seg(clock_t reloj) {
+    bool estado = false;
     if (reloj->ticks == reloj->ticks_por_seg) {
         reloj->ticks = 0;
         reloj->time[UNIDAD_SEG]++;
+        estado = true;
     }
+    return estado;
 }
 
 static void ClockIncrement_day(clock_t reloj) {
@@ -76,7 +79,7 @@ bool ClockSetTime(clock_t reloj, const uint8_t * hora, int size) {
 bool ClockTick(clock_t reloj) {
     bool estado;
     reloj->ticks++;
-    ClockIncrement_seg(reloj);
+    estado = ClockIncrement_seg(reloj);
     ClockIncrement(reloj, UNIDAD_SEG, UNIDAD_TIME); // INCREMENTAR_DECENAS_SEG
     ClockIncrement(reloj, DECENA_SEG, DECENA_TIME); // INCREMENTAR_MINUTOS_UNIDAD
     ClockIncrement(reloj, UNIDAD_MIN, UNIDAD_TIME); // INCREMENTAR_MINUTOS_DECENAS
@@ -88,11 +91,6 @@ bool ClockTick(clock_t reloj) {
         if ((memcmp(reloj->alarma->time, reloj->time, TIME_SIZE)) == 0) {
             reloj->alarma->toggle(true);
         }
-    }
-    if (reloj->ticks > (reloj->ticks_por_seg / 2)) {
-        estado = true;
-    } else {
-        estado = false;
     }
     return estado;
 }
