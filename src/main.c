@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include "al_bsp.h"
+#include "al_bcd.h"
 #include "al_gpio.h"
 #include "al_modo.h"
 #include "reloj.h"
@@ -27,109 +28,233 @@
 #define EVENT_RC_OFF    (1 << 10)
 #define EVENT_AC_OFF    (1 << 11)
 
-#define EVENT_REFRESH   (1 << 20)
+#define EVENT_HORA      (1 << 15)
+#define EVENT_ALARMA    (1 << 16)
 
 #define AL_DELAY(VALOR) ((TickType_t)((VALOR * 0.005) / portTICK_PERIOD_MS))
 #define INT_POR_SEG     1000
 #define TICKS_POR_SEG   10
 
 /*==================[internal data declaration]==============================*/
-typedef struct flash_s {
-    uint32_t         key;
-    DigitalOutput_pt led;
-    uint32_t         delay;
-} * flash_s;
-
-typedef struct refresh_s {
-    uint32_t  key;
-    display_t dis;
-    uint32_t  delay;
-} * refresh_s;
-
 typedef struct mef_s {
     uint32_t key;
     modo_t   modo;
 } * mef_s;
 
-typedef struct prueba_s {
-    uint32_t  key;
-    display_t dis;
-    uint32_t  delay;
-} * prueba_s;
+typedef struct boton_s {
+    uint32_t key;
+    uint32_t activar;
+    uint8_t  posicion;
+} * boton_s;
 /*==================[internal functions declaration]=========================*/
+static void StopByError(board_t board, uint8_t codigo);
+
 static void IncrementTask(void * object);
-static void FlashTask(void * object);
 static void KeyTask(void * object);
 static void RefreshTask(void * object);
+static void CambiarModoTask(void * object);
+static void ConfigUserTask(void * object);
+static void StartContadorTask(void * object);
 /*==================[internal data definition]===============================*/
-static board_t edu_cia;
-static clock_t reloj;
-static uint8_t hora_auxiliar[CANTIDAD_DIGITOS];
-// static uint16_t      contador_pulsos[3] = {0};
+static board_t       edu_cia;
+static clock_t       reloj;
+static modo_t        mef_estado;
+static uint8_t       hora_aux[CANTIDAD_DIGITOS];
+static uint16_t      contador_pulsos[3] = {0};
 
-// static const uint8_t LIMITE_MINUTOS[]   = {5, 9};
-// static const uint8_t LIMITE_HORAS[]     = {2, 3};
-EventGroupHandle_t key_events;
+static const uint8_t LIMITE_MINUTOS[]   = {5, 9};
+static const uint8_t LIMITE_HORAS[]     = {2, 3};
+EventGroupHandle_t   key_events;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
-void StopByError(board_t board, uint8_t codigo) {
-    if (codigo == 1) {
-        DigitalOutput_Activate(board->led_1);
+void CambiarModo(modo_t estado) {
+    mef_estado = estado;
+    switch (mef_estado) {
+        case SIN_CONFIGURAR:
+            DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){1, 1, 1, 1}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 1, 0, 0}, 50);
+            break;
+        case MOSTRANDO_HORA:
+            DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 1, 0, 0}, 50);
+
+            break;
+        case AJUSTAR_MINUTOS_ACTUAL:
+            DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){0, 0, 1, 1}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 50);
+            break;
+        case AJUSTAR_HORAS_ACTUAL:
+            DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){1, 1, 0, 0}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 50);
+            break;
+        case AJUSTAR_MINUTOS_ALARMA:
+            DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){0, 0, 1, 1}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 1, 1}, 50);
+            break;
+        case AJUSTAR_HORAS_ALARMA:
+            DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){1, 1, 0, 0}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){1, 1, 0, 0}, 50);
+            break;
+        default:
+            break;
     }
-    if (codigo == 2) {
-        DigitalOutput_Activate(board->led_2);
-    }
-    if (codigo == 3) {
-        DigitalOutput_Activate(board->led_3);
+}
+
+static void StopByError(board_t board, uint8_t codigo) {
+    switch (codigo) {
+        case 1:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_2);
+            DigitalOutput_Activate(board->led_3);
+            break;
+        case 2:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_3);
+            break;
+        case 3:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_2);
+            break;
+        default:
+            // Si el código no coincide con ninguno de los casos anteriores, no se activa ningún LED
+            // adicional, pero se sale del switch.
+            break;
     }
     while (true) {
-    };
+    }
 }
 
 static void IncrementTask(void * object) {
-    uint8_t hora[CANTIDAD_DIGITOS];
+    uint8_t  hora[CANTIDAD_DIGITOS];
+    uint32_t events = 0;
+    bool     var;
     while (true) {
-        if (ClockTick(reloj)) {
-            ClockGetTime(reloj, hora, CANTIDAD_DIGITOS);
-            DisplayWriteBCD(edu_cia->display, hora, CANTIDAD_DIGITOS);
+        var = ClockTick(reloj);
+        if (mef_estado <= MOSTRANDO_HORA) {
+            if (var) {
+                ClockGetTime(reloj, hora, CANTIDAD_DIGITOS);
+                DisplayWriteBCD(edu_cia->display, hora, CANTIDAD_DIGITOS);
+            }
         }
+        // if (contador_pulsos[0] > 0) {
+        //     contador_pulsos[0]++;
+        // }
+        // if (contador_pulsos[1] > 0) {
+        //     contador_pulsos[1]++;
+        // }
+        // if (contador_pulsos[0] > 3000) {
+        //     events |= EVENT_HORA;
+        // }
+
+        // if (contador_pulsos[0] > 3000) {
+        //     events |= EVENT_ALARMA;
+        // }
         vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
 static void RefreshTask(void * object) {
-    refresh_s options = object;
-
     while (true) {
-        xEventGroupWaitBits(key_events, options->key, TRUE, FALSE, portMAX_DELAY);
-        DisplayRefresh(options->dis);
-        vTaskDelay(pdMS_TO_TICKS(options->delay));
+        DisplayRefresh(edu_cia->display);
+        vTaskDelay(pdMS_TO_TICKS(5));
     };
 }
 
-static void Task1(void * object) {
-    prueba_s options = object;
-    uint8_t  hora[CANTIDAD_DIGITOS];
+static void CambiarModoTask(void * object) {
+    mef_s options = object;
     while (true) {
         xEventGroupWaitBits(key_events, options->key, TRUE, FALSE, portMAX_DELAY);
-        ClockGetTime(reloj, hora, CANTIDAD_DIGITOS);
-        DisplayWriteBCD(options->dis, hora, CANTIDAD_DIGITOS);
-        // DisplayWriteBCD(options->dis, (uint8_t[]){0, 1, 1, 0}, CANTIDAD_DIGITOS);
+        if (DigitalInput_GetState(edu_cia->f1)) {
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 0);
+            CambiarModo(AJUSTAR_MINUTOS_ACTUAL);
+            ClockGetTime(reloj, hora_aux, sizeof(hora_aux));
+            DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+        }
+        if (DigitalInput_GetState(edu_cia->f2)) {
+            DisplayPuntoAlarma(edu_cia->display, false);
+            CambiarModo(AJUSTAR_MINUTOS_ALARMA);
+            ClockGetAlarma(reloj, hora_aux, sizeof(hora_aux));
+            DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+        }
+        vTaskDelay(pdMS_TO_TICKS(200));
     };
 }
 
-static void FlashTask(void * object) {
-    flash_s options = object;
-
+static void ConfigUserTask(void * object) {
+    mef_s options = object;
     while (true) {
         xEventGroupWaitBits(key_events, options->key, TRUE, FALSE, portMAX_DELAY);
+        if (DigitalInput_GetState(edu_cia->aceptar)) {
+            if (mef_estado == MOSTRANDO_HORA) {
+                if (DigitalOutput_GetState(edu_cia->buz)) {
+                    ClockPosponerAlarma(reloj, TIME_POST);
+                } else if (!ClockGetAlarmaHabilitada(reloj)) {
+                    ClockToggleAlarma(reloj);
+                    DisplayPuntoAlarma(edu_cia->display, true);
+                }
+            } else if (mef_estado == AJUSTAR_MINUTOS_ACTUAL) {
+                CambiarModo(AJUSTAR_HORAS_ACTUAL);
+            } else if (mef_estado == AJUSTAR_HORAS_ACTUAL) {
+                ClockSetTime(reloj, hora_aux, sizeof(hora_aux));
+                CambiarModo(MOSTRANDO_HORA);
+            } else if (mef_estado == AJUSTAR_MINUTOS_ALARMA) {
+                CambiarModo(AJUSTAR_HORAS_ALARMA);
+            } else if (mef_estado == AJUSTAR_HORAS_ALARMA) {
+                ClockSetAlarma(reloj, hora_aux, sizeof(hora_aux));
+                CambiarModo(MOSTRANDO_HORA);
+                DisplayPuntoAlarma(edu_cia->display, true);
+            }
+        }
 
-        DigitalOutput_Activate(options->led);
-        vTaskDelay(pdMS_TO_TICKS(options->delay));
-        DigitalOutput_Desactivate(options->led);
-        vTaskDelay(pdMS_TO_TICKS(options->delay));
-    };
+        if (DigitalInput_GetState(edu_cia->rechazar)) {
+            if (mef_estado == MOSTRANDO_HORA) {
+                if (DigitalOutput_GetState(edu_cia->buz)) {
+                    ClockCancelarAlarma(reloj);
+                } else if (ClockGetAlarmaHabilitada(reloj)) {
+                    ClockToggleAlarma(reloj);
+                    DisplayPuntoAlarma(edu_cia->display, false);
+                    ClockCancelarAlarma(reloj);
+                }
+            } else {
+                if (ClockGetTime(reloj, hora_aux, sizeof(hora_aux))) {
+                    CambiarModo(MOSTRANDO_HORA);
+                } else {
+                    CambiarModo(SIN_CONFIGURAR);
+                }
+            }
+        }
+        if (DigitalInput_GetState(edu_cia->f3)) {
+            if ((mef_estado == AJUSTAR_MINUTOS_ACTUAL) || (mef_estado == AJUSTAR_MINUTOS_ALARMA)) {
+                DecrementarBCD(&hora_aux[2], LIMITE_MINUTOS);
+            } else if ((mef_estado == AJUSTAR_HORAS_ACTUAL) ||
+                       (mef_estado == AJUSTAR_HORAS_ALARMA)) {
+                DecrementarBCD(&hora_aux[0], LIMITE_HORAS);
+            }
+            if ((mef_estado == AJUSTAR_MINUTOS_ACTUAL) || (mef_estado == AJUSTAR_HORAS_ACTUAL)) {
+                DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+            } else if (((mef_estado == AJUSTAR_MINUTOS_ALARMA) ||
+                        (mef_estado == AJUSTAR_HORAS_ALARMA))) {
+                DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+            }
+        }
+
+        if (DigitalInput_GetState(edu_cia->f4)) {
+            if ((mef_estado == AJUSTAR_MINUTOS_ACTUAL) || (mef_estado == AJUSTAR_MINUTOS_ALARMA)) {
+                IncrementarBCD(&hora_aux[2], LIMITE_MINUTOS);
+            } else if ((mef_estado == AJUSTAR_HORAS_ACTUAL) ||
+                       (mef_estado == AJUSTAR_HORAS_ALARMA)) {
+                IncrementarBCD(&hora_aux[0], LIMITE_HORAS);
+            }
+            if ((mef_estado == AJUSTAR_MINUTOS_ACTUAL) || (mef_estado == AJUSTAR_HORAS_ACTUAL)) {
+                DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+            } else if (((mef_estado == AJUSTAR_MINUTOS_ALARMA) ||
+                        (mef_estado == AJUSTAR_HORAS_ALARMA))) {
+                DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
 }
 
 static void KeyTask(void * object) {
@@ -137,7 +262,7 @@ static void KeyTask(void * object) {
     uint32_t last_state, current_state, changes, events;
 
     while (true) {
-        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelay(pdMS_TO_TICKS(100));
 
         current_state = 0;
         if (DigitalInput_GetState(placa->f1)) {
@@ -162,9 +287,20 @@ static void KeyTask(void * object) {
         changes    = current_state ^ last_state;
         last_state = current_state;
         events     = ((changes & !current_state) << 6) | (changes & current_state);
-        events |= EVENT_REFRESH;
 
         xEventGroupSetBits(key_events, events);
+    }
+}
+
+static void StartContadorTask(void * object) {
+    boton_s  options = object;
+    uint32_t events;
+    while (true) {
+        xEventGroupWaitBits(key_events, options->key, TRUE, FALSE, portMAX_DELAY);
+        contador_pulsos[options->posicion] = 1;
+        events                             = options->activar;
+        xEventGroupSetBits(key_events, events);
+        vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
 
@@ -172,35 +308,31 @@ static void KeyTask(void * object) {
 
 int main(void) {
 
-    static struct flash_s   flash[3];
-    static struct refresh_s refresh[1];
-    static struct prueba_s  prueba[1];
+    static struct boton_s boton[2];
+    static struct mef_s   mef[3];
 
     edu_cia = board_Create();
     reloj   = ClockCreate(TICKS_POR_SEG, AlarmaToggle);
     SysTickConfig(INT_POR_SEG);
 
-    /* Configuramos las entradas para encender los leds*/
+    /* El reloj comienza sin configurar.*/
 
-    flash[0].key     = EVENT_F1_ON;
-    flash[0].led     = edu_cia->led_1;
-    flash[0].delay   = 500;
-    flash[1].key     = EVENT_F2_ON;
-    flash[1].led     = edu_cia->led_2;
-    flash[1].delay   = 500;
-    flash[2].key     = EVENT_F3_ON;
-    flash[2].led     = edu_cia->led_3;
-    flash[2].delay   = 500;
-    refresh[0].key   = EVENT_REFRESH;
-    refresh[0].dis   = edu_cia->display;
-    refresh[0].delay = 1;
-    prueba[0].key    = EVENT_AC_ON;
-    prueba[0].dis    = edu_cia->display;
-    prueba[0].delay  = 100;
+    CambiarModo(SIN_CONFIGURAR);
 
-    /* Inicializamos la pantalla del LCD.*/
-    ClockSetTime(reloj, hora_auxiliar, CANTIDAD_DIGITOS);
-    DisplayWriteBCD(edu_cia->display, hora_auxiliar, CANTIDAD_DIGITOS);
+    /* Configuramos los struct de las tareas */
+    boton[0].key      = EVENT_F1_ON;
+    boton[0].posicion = 0;
+    boton[0].activar  = EVENT_HORA;
+    boton[1].key      = EVENT_F2_ON;
+    boton[1].posicion = 1;
+    boton[1].activar  = EVENT_ALARMA;
+
+    mef[0].key        = EVENT_F1_ON;
+    mef[0].modo       = AJUSTAR_MINUTOS_ACTUAL;
+    mef[1].key        = EVENT_F2_ON;
+    mef[1].modo       = AJUSTAR_MINUTOS_ALARMA;
+    mef[2].key        = EVENT_F3_ON | EVENT_F4_ON | EVENT_AC_ON | EVENT_RC_ON;
+    mef[2].modo       = MOSTRANDO_HORA;
 
     /* Comenzamos con la creacion de las tareas.*/
 
@@ -208,26 +340,12 @@ int main(void) {
     if (key_events == NULL) {
         StopByError(edu_cia, 1);
     }
-    if (xTaskCreate(KeyTask, "Keys", 256, (void *)edu_cia, tskIDLE_PRIORITY + 1, NULL) != pdPASS) {
-        StopByError(edu_cia, 1);
-    }
-    if (xTaskCreate(RefreshTask, "Refresco", 256, &refresh[0], tskIDLE_PRIORITY + 2, NULL) !=
-        pdPASS) {
-        StopByError(edu_cia, 2);
-    }
-    xTaskCreate(Task1, "TareaPrueba", 256, &prueba[0], tskIDLE_PRIORITY + 3, NULL);
+    xTaskCreate(RefreshTask, "Refresco", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(KeyTask, "Keys", 256, (void *)edu_cia, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(CambiarModoTask, "ModificarHora", 256, &mef[0], tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(CambiarModoTask, "ModificarAlarma", 256, &mef[1], tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(ConfigUserTask, "ConfigurarUsuario", 256, &mef[2], tskIDLE_PRIORITY + 2, NULL);
     xTaskCreate(IncrementTask, "ClockTick", 256, NULL, tskIDLE_PRIORITY + 4, NULL);
-
-    if (xTaskCreate(FlashTask, "RedTask", 256, &flash[0], tskIDLE_PRIORITY + 0, NULL) != pdPASS) {
-        StopByError(edu_cia, 3);
-    }
-    if (xTaskCreate(FlashTask, "YellowTask", 256, &flash[1], tskIDLE_PRIORITY + 0, NULL) !=
-        pdPASS) {
-        StopByError(edu_cia, 3);
-    }
-    if (xTaskCreate(FlashTask, "BlueTask", 256, &flash[2], tskIDLE_PRIORITY + 0, NULL) != pdPASS) {
-        StopByError(edu_cia, 3);
-    }
 
     vTaskStartScheduler();
 
@@ -236,19 +354,6 @@ int main(void) {
     return 0;
 }
 
-// void InterupEvent(board_t board, clock_t rj) {
-//     uint8_t    hora[TIME_SIZE];
-//     TickType_t last_value = xTaskGetTickCountFromISR();
-
-//     DisplayRefresh(board->display);
-//     ClockGetTime(rj, hora, 4);
-//     DisplayWriteBCD(board->display, hora, 4);
-//     xTaskDelayUntil(&last_value, AL_DELAY(200));
-// }
-
-// void SysTick_Handler(void) {
-//     InterupEvent(edu_cia, reloj);
-// }
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
