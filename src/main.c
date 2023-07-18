@@ -28,40 +28,43 @@
 #define EVENT_RC_OFF    (1 << 10)
 #define EVENT_AC_OFF    (1 << 11)
 
-#define EVENT_HORA      (1 << 15)
-#define EVENT_ALARMA    (1 << 16)
-
 #define AL_DELAY(VALOR) ((TickType_t)((VALOR * 0.005) / portTICK_PERIOD_MS))
 #define INT_POR_SEG     1000
 #define TICKS_POR_SEG   10
 
 /*==================[internal data declaration]==============================*/
+typedef void (*cambiar_estado_t)(void);
+
 typedef struct mef_s {
     uint32_t key;
-    modo_t   modo;
 } * mef_s;
 
 typedef struct boton_s {
-    uint32_t key;
-    // uint32_t fin;
-    uint8_t posicion;
+    uint8_t          posicion;
+    uint32_t         key;
+    uint32_t         key_end;
+    modo_t           estado;
+    cambiar_estado_t funcion;
 } * boton_s;
 /*==================[internal functions declaration]=========================*/
 static void StopByError(board_t board, uint8_t codigo);
+static void CambiarModo(modo_t estado);
+static void CambiarMinActual(void);
+static void CambiarMinAlarma(void);
 
 static void IncrementTask(void * object);
 static void KeyTask(void * object);
 static void RefreshTask(void * object);
-static void CambiarModoTask(void * object);
 static void ConfigUserTask(void * object);
 static void StartContadorTask(void * object);
+static void CountTask(void * object);
 static void FinishContadorTask(void * object);
 /*==================[internal data definition]===============================*/
 static board_t       edu_cia;
 static clock_t       reloj;
 static modo_t        mef_estado;
 static uint8_t       hora_aux[CANTIDAD_DIGITOS];
-static uint16_t      contador_pulsos[3] = {0};
+static uint32_t      contador_pulsos[3] = {0};
 
 static const uint8_t LIMITE_MINUTOS[]   = {5, 9};
 static const uint8_t LIMITE_HORAS[]     = {2, 3};
@@ -69,7 +72,16 @@ EventGroupHandle_t   key_events;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
-void CambiarModo(modo_t estado) {
+static void CambiarMinActual(void) {
+    ClockGetTime(reloj, hora_aux, sizeof(hora_aux));
+    DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+}
+static void CambiarMinAlarma(void) {
+    DisplayPuntoAlarma(edu_cia->display, false);
+    ClockGetAlarma(reloj, hora_aux, sizeof(hora_aux));
+    DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
+}
+static void CambiarModo(modo_t estado) {
     mef_estado = estado;
     switch (mef_estado) {
         case SIN_CONFIGURAR:
@@ -83,11 +95,11 @@ void CambiarModo(modo_t estado) {
             break;
         case AJUSTAR_MINUTOS_ACTUAL:
             DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){0, 0, 1, 1}, 50);
-            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 0);
             break;
         case AJUSTAR_HORAS_ACTUAL:
             DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){1, 1, 0, 0}, 50);
-            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 50);
+            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 0);
             break;
         case AJUSTAR_MINUTOS_ALARMA:
             DisplayNewParpadeoDigitos(edu_cia->display, (uint8_t[]){0, 0, 1, 1}, 50);
@@ -101,7 +113,6 @@ void CambiarModo(modo_t estado) {
             break;
     }
 }
-
 static void StopByError(board_t board, uint8_t codigo) {
     switch (codigo) {
         case 1:
@@ -126,10 +137,12 @@ static void StopByError(board_t board, uint8_t codigo) {
     }
 }
 
+/* TAREAS */
+
 static void IncrementTask(void * object) {
-    uint8_t  hora[CANTIDAD_DIGITOS];
-    uint32_t events = 0;
-    bool     var;
+    TickType_t last_value = xTaskGetTickCount();
+    uint8_t    hora[CANTIDAD_DIGITOS];
+    bool       var;
     while (true) {
         var = ClockTick(reloj);
         if (mef_estado <= MOSTRANDO_HORA) {
@@ -138,24 +151,8 @@ static void IncrementTask(void * object) {
                 DisplayWriteBCD(edu_cia->display, hora, CANTIDAD_DIGITOS);
             }
         }
-        if (contador_pulsos[0] > 0) {
-            contador_pulsos[0]++;
-            if (contador_pulsos[0] = 3000) {
-                events |= EVENT_HORA;
-                contador_pulsos[0] = 0;
-                xEventGroupSetBits(key_events, events);
-            }
-        }
-        if (contador_pulsos[1] > 0) {
-            contador_pulsos[1]++;
-            if (contador_pulsos[1] = 3000) {
-                events |= EVENT_ALARMA;
-                contador_pulsos[1] = 0;
-                xEventGroupSetBits(key_events, events);
-            }
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1));
+        // vTaskDelay(pdMS_TO_TICKS(1));
+        xTaskDelayUntil(&last_value, pdMS_TO_TICKS(1));
     }
 }
 
@@ -163,26 +160,6 @@ static void RefreshTask(void * object) {
     while (true) {
         DisplayRefresh(edu_cia->display);
         vTaskDelay(pdMS_TO_TICKS(5));
-    };
-}
-
-static void CambiarModoTask(void * object) {
-    mef_s options = object;
-    while (true) {
-        xEventGroupWaitBits(key_events, options->key, TRUE, FALSE, portMAX_DELAY);
-        if (DigitalInput_GetState(edu_cia->f1)) {
-            DisplayParpadeoPuntos(edu_cia->display, (uint8_t[]){0, 0, 0, 0}, 0);
-            CambiarModo(AJUSTAR_MINUTOS_ACTUAL);
-            ClockGetTime(reloj, hora_aux, sizeof(hora_aux));
-            DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
-        }
-        if (DigitalInput_GetState(edu_cia->f2)) {
-            DisplayPuntoAlarma(edu_cia->display, false);
-            CambiarModo(AJUSTAR_MINUTOS_ALARMA);
-            ClockGetAlarma(reloj, hora_aux, sizeof(hora_aux));
-            DisplayWriteBCD(edu_cia->display, hora_aux, sizeof(hora_aux));
-        }
-        vTaskDelay(pdMS_TO_TICKS(200));
     };
 }
 
@@ -305,21 +282,36 @@ static void StartContadorTask(void * object) {
         vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
-// static void FinishContadorTask(void * object) {
-//     boton_s options = object;
-//     while (true) {
-//         xEventGroupWaitBits(key_events, options->fin, TRUE, FALSE, portMAX_DELAY);
-//         contador_pulsos[options->posicion] = 0;
-//         vTaskDelay(pdMS_TO_TICKS(200));
-//     }
-// }
+
+static void CountTask(void * object) {
+    boton_s options = object;
+    while (true) {
+        vTaskDelay(pdMS_TO_TICKS(1));
+        if (contador_pulsos[options->posicion] > 0) {
+            contador_pulsos[options->posicion]++;
+        }
+    }
+}
+
+static void FinishContadorTask(void * object) {
+    boton_s options = object;
+    while (true) {
+        xEventGroupWaitBits(key_events, options->key_end, TRUE, FALSE, portMAX_DELAY);
+        if (contador_pulsos[options->posicion] > 3000) {
+            CambiarModo(options->estado);
+            options->funcion();
+        }
+        contador_pulsos[options->posicion] = 0;
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
+}
 
 /*==================[external functions definition]==========================*/
 
 int main(void) {
 
-    static struct boton_s boton[2];
-    static struct mef_s   mef[3];
+    static struct boton_s boton[3];
+    static struct mef_s   mef[1];
 
     edu_cia = board_Create();
     reloj   = ClockCreate(TICKS_POR_SEG, AlarmaToggle);
@@ -332,17 +324,17 @@ int main(void) {
     /* Configuramos los struct de las tareas */
     boton[0].key      = EVENT_F1_ON;
     boton[0].posicion = 0;
-    // boton[0].fin      = EVENT_F1_OFF;
+    boton[0].estado   = AJUSTAR_MINUTOS_ACTUAL;
+    boton[0].key_end  = EVENT_F1_OFF;
+    boton[0].funcion  = CambiarMinActual;
+
     boton[1].key      = EVENT_F2_ON;
     boton[1].posicion = 1;
-    // boton[1].fin      = EVENT_F2_OFF;
+    boton[1].estado   = AJUSTAR_MINUTOS_ALARMA;
+    boton[1].key_end  = EVENT_F2_OFF;
+    boton[1].funcion  = CambiarMinAlarma;
 
-    mef[0].key  = EVENT_HORA;
-    mef[0].modo = AJUSTAR_MINUTOS_ACTUAL;
-    mef[1].key  = EVENT_ALARMA;
-    mef[1].modo = AJUSTAR_MINUTOS_ALARMA;
-    mef[2].key  = EVENT_F3_ON | EVENT_F4_ON | EVENT_AC_ON | EVENT_RC_ON;
-    mef[2].modo = MOSTRANDO_HORA;
+    mef[0].key        = EVENT_F3_ON | EVENT_F4_ON | EVENT_AC_ON | EVENT_RC_ON;
 
     /* Comenzamos con la creacion de las tareas.*/
 
@@ -351,14 +343,17 @@ int main(void) {
         StopByError(edu_cia, 1);
     }
     xTaskCreate(RefreshTask, "Refresco", 256, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(KeyTask, "Keys", 256, (void *)edu_cia, tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(CambiarModoTask, "ModificarHora", 256, &mef[0], tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(CambiarModoTask, "ModificarAlarma", 256, &mef[1], tskIDLE_PRIORITY + 2, NULL);
-    xTaskCreate(ConfigUserTask, "ConfigurarUsuario", 256, &mef[2], tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(KeyTask, "Keys", 256, (void *)edu_cia, tskIDLE_PRIORITY + 3, NULL);
+    xTaskCreate(ConfigUserTask, "ConfigurarUsuario", 256, &mef[0], tskIDLE_PRIORITY + 2, NULL);
+
     xTaskCreate(StartContadorTask, "ContadorF1", 256, &boton[0], tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(CountTask, "ConteoF1", 256, &boton[0], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(FinishContadorTask, "ContadorFinalF1", 256, &boton[0], tskIDLE_PRIORITY + 2, NULL);
+
     xTaskCreate(StartContadorTask, "ContadorF2", 256, &boton[1], tskIDLE_PRIORITY + 2, NULL);
-    // xTaskCreate(FinishContadorTask, "ContadorFinF1", 256, &boton[0], tskIDLE_PRIORITY + 2, NULL);
-    // xTaskCreate(FinishContadorTask, "ContadorFinF2", 256, &boton[1], tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(CountTask, "ConteoF2", 256, &boton[1], tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(FinishContadorTask, "ContadorFinalF2", 256, &boton[1], tskIDLE_PRIORITY + 2, NULL);
+
     xTaskCreate(IncrementTask, "ClockTick", 256, NULL, tskIDLE_PRIORITY + 4, NULL);
 
     vTaskStartScheduler();
