@@ -241,7 +241,7 @@ static void ConfigUserTask(void * object) {
 
 static void KeyTask(void * object) {
     board_t  placa = object;
-    uint32_t last_state, current_state, changes, events;
+    uint16_t last_state, current_state, changes, events;
 
     while (true) {
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -282,7 +282,6 @@ static void StartContadorTask(void * object) {
         vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
-
 static void CountTask(void * object) {
     boton_s options = object;
     while (true) {
@@ -292,7 +291,6 @@ static void CountTask(void * object) {
         }
     }
 }
-
 static void FinishContadorTask(void * object) {
     boton_s options = object;
     while (true) {
@@ -331,7 +329,7 @@ int main(void) {
     boton[1].key      = EVENT_F2_ON;
     boton[1].posicion = 1;
     boton[1].estado   = AJUSTAR_MINUTOS_ALARMA;
-    boton[1].key_end  = EVENT_F2_OFF;
+    boton[1].key_end  = EVENT_F1_OFF;
     boton[1].funcion  = CambiarMinAlarma;
 
     mef[0].key        = EVENT_F3_ON | EVENT_F4_ON | EVENT_AC_ON | EVENT_RC_ON;
