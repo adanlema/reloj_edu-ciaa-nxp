@@ -42,6 +42,7 @@ typedef struct mef_s {
 typedef struct boton_s {
     uint8_t          posicion;
     uint32_t         key;
+    uint32_t         delay;
     uint32_t         key_end;
     modo_t           estado;
     cambiar_estado_t funcion;
@@ -129,8 +130,7 @@ static void StopByError(board_t board, uint8_t codigo) {
             DigitalOutput_Activate(board->led_2);
             break;
         default:
-            // Si el código no coincide con ninguno de los casos anteriores, no se activa ningún LED
-            // adicional, pero se sale del switch.
+            // sale del switch.
             break;
     }
     while (true) {
@@ -312,7 +312,7 @@ static void FinishContadorTask(void * object) {
     boton_s options = object;
     while (true) {
         xEventGroupWaitBits(key_events, options->key_end, TRUE, FALSE, portMAX_DELAY);
-        if (contador_pulsos[options->posicion] > 3000) {
+        if (contador_pulsos[options->posicion] > options->delay) {
             CambiarModo(options->estado);
             options->funcion();
         }
@@ -339,12 +339,14 @@ int main(void) {
     /* Configuramos los struct de las tareas */
     boton[0].key      = EVENT_F1_ON;
     boton[0].posicion = 0;
+    boton[0].delay    = 3000;
     boton[0].estado   = AJUSTAR_MINUTOS_ACTUAL;
     boton[0].key_end  = EVENT_F1_OFF;
     boton[0].funcion  = CambiarMinActual;
 
     boton[1].key      = EVENT_F2_ON;
     boton[1].posicion = 1;
+    boton[1].delay    = 3000;
     boton[1].estado   = AJUSTAR_MINUTOS_ALARMA;
     boton[1].key_end  = EVENT_F2_OFF;
     boton[1].funcion  = CambiarMinAlarma;
