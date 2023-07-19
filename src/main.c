@@ -21,12 +21,12 @@
 #define EVENT_RC_ON     (1 << 4)
 #define EVENT_AC_ON     (1 << 5)
 
-#define EVENT_F1_OFF    (1 << 6)
-#define EVENT_F2_OFF    (1 << 7)
-#define EVENT_F3_OFF    (1 << 8)
-#define EVENT_F4_OFF    (1 << 9)
-#define EVENT_RC_OFF    (1 << 10)
-#define EVENT_AC_OFF    (1 << 11)
+#define EVENT_F1_OFF    (1 << 8)
+#define EVENT_F2_OFF    (1 << 9)
+#define EVENT_F3_OFF    (1 << 10)
+#define EVENT_F4_OFF    (1 << 11)
+#define EVENT_RC_OFF    (1 << 12)
+#define EVENT_AC_OFF    (1 << 13)
 
 #define AL_DELAY(VALOR) ((TickType_t)((VALOR * 0.005) / portTICK_PERIOD_MS))
 #define INT_POR_SEG     1000
@@ -249,26 +249,43 @@ static void KeyTask(void * object) {
         current_state = 0;
         if (DigitalInput_GetState(placa->f1)) {
             current_state |= EVENT_F1_ON;
+        } else {
+            current_state |= EVENT_F1_OFF;
         }
+
         if (DigitalInput_GetState(placa->f2)) {
             current_state |= EVENT_F2_ON;
+        } else {
+            current_state |= EVENT_F2_OFF;
         }
+
         if (DigitalInput_GetState(placa->f3)) {
             current_state |= EVENT_F3_ON;
+        } else {
+            current_state |= EVENT_F3_OFF;
         }
+
         if (DigitalInput_GetState(placa->f4)) {
             current_state |= EVENT_F4_ON;
+        } else {
+            current_state |= EVENT_F4_OFF;
         }
+
         if (DigitalInput_GetState(placa->rechazar)) {
             current_state |= EVENT_RC_ON;
+        } else {
+            current_state |= EVENT_RC_OFF;
         }
+
         if (DigitalInput_GetState(placa->aceptar)) {
             current_state |= EVENT_AC_ON;
+        } else {
+            current_state |= EVENT_AC_OFF;
         }
 
         changes    = current_state ^ last_state;
         last_state = current_state;
-        events     = ((changes & !current_state) << 6) | (changes & current_state);
+        events     = changes & current_state;
 
         xEventGroupSetBits(key_events, events);
     }
@@ -329,7 +346,7 @@ int main(void) {
     boton[1].key      = EVENT_F2_ON;
     boton[1].posicion = 1;
     boton[1].estado   = AJUSTAR_MINUTOS_ALARMA;
-    boton[1].key_end  = EVENT_F1_OFF;
+    boton[1].key_end  = EVENT_F2_OFF;
     boton[1].funcion  = CambiarMinAlarma;
 
     mef[0].key        = EVENT_F3_ON | EVENT_F4_ON | EVENT_AC_ON | EVENT_RC_ON;
