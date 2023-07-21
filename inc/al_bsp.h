@@ -50,6 +50,13 @@ void SysTickConfig(uint32_t ticks);
  * @param estado *true* si se quiere activar, *false* si se quiere apagar.
  */
 void AlarmaToggle(bool estado);
+/**
+ * @brief Funcion para indicar un error al crear una tarea.
+ *
+ * @param board Puntero a la placa.
+ * @param codigo Codigo para indicar el error.
+ */
+void StopByError(board_t board, uint8_t codigo);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

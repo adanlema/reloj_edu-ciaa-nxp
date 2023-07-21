@@ -177,5 +177,34 @@ void AlarmaToggle(bool estado) {
     else
         Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, false);
 }
+
+void StopByError(board_t board, uint8_t codigo) {
+    switch (codigo) {
+        case 1:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_2);
+            DigitalOutput_Activate(board->led_3);
+            break;
+        case 2:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_3);
+            break;
+        case 3:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_2);
+            break;
+        case 4:
+            DigitalOutput_Activate(board->led_3);
+            DigitalOutput_Activate(board->led_2);
+            break;
+        case 5:
+            DigitalOutput_Activate(board->buz);
+            break;
+        default:
+            break;
+    }
+    while (true) {
+    }
+}
 /**  doxygen end group definition */
 /*==================[end of file]============================================*/
