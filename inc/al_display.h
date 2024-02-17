@@ -39,6 +39,12 @@ typedef struct display_driver_s {
     display_encender_digito_t   DisplayEncenderDigito;
 } const * const display_driver_t;
 
+typedef struct parpadeo_s {
+    uint8_t  parpadeo[4];
+    uint16_t contador;
+    uint16_t frecuencia;
+    bool     bandera;
+} * parpadeo_t;
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
@@ -64,7 +70,40 @@ void DisplayWriteBCD(display_t display, uint8_t * number, uint8_t size);
  * @param display Puntero al display.
  */
 void DisplayRefresh(display_t display);
-
+/**
+ * @brief Funcion para cambiar el estado de un punto
+ * Es una funcion para cambiar el estado de un puntero de un segmento especifico.
+ * @param display Puntero al display.
+ * @param posicion Posicion del punto que se quiere encender.
+ */
+void DisplayTogglePunto(display_t display, uint8_t posicion);
+/**
+ * @brief Parpadeo de los Digitos
+ * Es una funcion que se encarga del parpadeo de los digitos del display. Se le debe pasar un vector
+ * indicando que puntos se quiere encender y la frecuencia que tendra el parpadeo deseado. Se debe
+ * colocar un 1 si se desea parpadear ese segmento, y un 0 en el caso contrario.
+ * @param display Puntero al display
+ * @param number Vector con los digitos a parpadear
+ * @param frecuencia Frecuencia de parpadeo
+ */
+void DisplayNewParpadeoDigitos(display_t display, uint8_t * number, uint16_t frecuencia);
+/**
+ * @brief Parpadeo de los puntos del display
+ * Es una funcion que se encarga del parpadeo de los puntos del display. Se le debe pasar un vector
+ * con los digitos que desea encender y la frecuencia que tendra el mismo. El dutty cicle viene
+ * establecido, y es de un 50%.
+ * @param display Puntero al display.
+ * @param number Vector con los puntos a parpadear.
+ * @param frecuencia Frecuencia de parpadeo.
+ */
+void DisplayParpadeoPuntos(display_t display, uint8_t * number, uint16_t frecuencia);
+/**
+ * @brief Encendido del indicador de la alarma.
+ * Es una funcion que utilizamos para indicar visualmente si la alarma esta encendido o no.
+ * @param display Puntero al display.
+ * @param estado Se envia "true" si la alarma esta encendido, "false" caso contrario.
+ */
+void DisplayPuntoAlarma(display_t display, bool estado);
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */
 /** @ doxygen end group definition */

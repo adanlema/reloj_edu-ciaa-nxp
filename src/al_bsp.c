@@ -147,13 +147,64 @@ board_t board_Create(void) {
     board.f3       = DigitalInput_Create(KEY_F3_GPIO, KEY_F3_BIT, false);
     board.f4       = DigitalInput_Create(KEY_F4_GPIO, KEY_F4_BIT, false);
     /*  Salidas  */
-    board.buz     = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
-    board.display = DisplayCreate(4, &(struct display_driver_s){
-                                         .DisplayApagar           = DisplayApagar,
-                                         .DisplayEncenderSegmento = DisplayEncenderSegmento,
-                                         .DisplayEncenderDigito   = DisplayEncenderDigito,
-                                     });
+    board.led_1 = DigitalOutput_Create(LED_1_GPIO, LED_1_BIT);
+    board.led_2 = DigitalOutput_Create(LED_2_GPIO, LED_2_BIT);
+    board.led_3 = DigitalOutput_Create(LED_B_GPIO, LED_B_BIT);
+    board.buz   = DigitalOutput_Create(LED_3_GPIO, LED_3_BIT);
+    board.display =
+        DisplayCreate(CANTIDAD_DIGITOS, &(struct display_driver_s){
+                                            .DisplayApagar           = DisplayApagar,
+                                            .DisplayEncenderSegmento = DisplayEncenderSegmento,
+                                            .DisplayEncenderDigito   = DisplayEncenderDigito,
+                                        });
     return &board;
+}
+
+void SysTickConfig(uint32_t ticks) {
+    __disable_irq();
+
+    SystemCoreClockUpdate();
+    SysTick_Config(SystemCoreClock / ticks);
+    NVIC_SetPriority(SysTick_IRQn, (1 << __NVIC_PRIO_BITS) - 1);
+    NVIC_EnableIRQ(SysTick_IRQn);
+
+    __enable_irq();
+}
+
+void AlarmaToggle(bool estado) {
+    if (estado)
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, true);
+    else
+        Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_3_GPIO, LED_3_BIT, false);
+}
+
+void StopByError(board_t board, uint8_t codigo) {
+    switch (codigo) {
+        case 1:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_2);
+            DigitalOutput_Activate(board->led_3);
+            break;
+        case 2:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_3);
+            break;
+        case 3:
+            DigitalOutput_Activate(board->led_1);
+            DigitalOutput_Activate(board->led_2);
+            break;
+        case 4:
+            DigitalOutput_Activate(board->led_3);
+            DigitalOutput_Activate(board->led_2);
+            break;
+        case 5:
+            DigitalOutput_Activate(board->buz);
+            break;
+        default:
+            break;
+    }
+    while (true) {
+    }
 }
 /**  doxygen end group definition */
 /*==================[end of file]============================================*/

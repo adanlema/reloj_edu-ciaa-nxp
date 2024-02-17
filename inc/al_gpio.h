@@ -98,6 +98,14 @@ bool DigitalInput_HasDesactivate(DigitalInput_pt AL);
  */
 DigitalOutput_pt DigitalOutput_Create(uint8_t port, uint8_t pin);
 /**
+ * @brief Digital Output Get State
+ * Devuelve el estado de la salida.
+ * @param AL Puntero al struct de la salida.
+ * @return true Si se encuentra activo.
+ * @return false Si no esta activo.
+ */
+bool DigitalOutput_GetState(DigitalOutput_pt AL);
+/**
  * @brief Digital Output Activate
  * Activa la salida solicitada.
  * @param AL Puntero a la salida digital.

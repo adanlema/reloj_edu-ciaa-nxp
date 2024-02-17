@@ -131,6 +131,11 @@ DigitalOutput_pt DigitalOutput_Create(uint8_t port, uint8_t pin) {
     Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, port, pin, true);
     return AL;
 }
+
+bool DigitalOutput_GetState(DigitalOutput_pt AL) {
+    return Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, AL->port, AL->pin);
+}
+
 void DigitalOutput_Activate(DigitalOutput_pt AL) {
     Chip_GPIO_SetPinState(LPC_GPIO_PORT, AL->port, AL->pin, true);
 }
